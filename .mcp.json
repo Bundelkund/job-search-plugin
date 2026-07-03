@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "tenant": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/index.mjs"],
+      "env": {
+        "TENANT_URL": "https://tenant.konektos.de",
+        "TENANT_API_KEY": "${env:TENANT_API_KEY}"
+      }
+    }
+  }
+}

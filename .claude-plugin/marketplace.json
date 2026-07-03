@@ -1,0 +1,8 @@
+{
+  "name": "konektos",
+  "description": "Job-search skills + tenant connector for Claude Code.",
+  "owner": { "name": "Florian Rister" },
+  "plugins": [
+    { "name": "job-search", "source": "./" }
+  ]
+}
