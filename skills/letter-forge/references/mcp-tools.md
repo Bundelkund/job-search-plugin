@@ -1,6 +1,6 @@
 # MCP Tools Reference
 
-> The two tools used by letter-forge. Provided by the `tenant-mcp` connector (>= v0.2.0).
+> The two tools used by letter-forge. Provided by the tenant connector (>= v0.2.0).
 > No local filesystem, no direct API calls, no shell commands.
 
 ---
@@ -94,6 +94,6 @@ before calling `set_my_profile`. Never write without confirmation.
 
 ## Version note
 
-`set_my_profile` was added in `tenant-mcp v0.2.0`. Earlier connector versions expose
+`set_my_profile` was added in connector v0.2.0. Earlier versions expose
 `get_my_profile` and `save_application` only. If `set_my_profile` is not in the tool
 list, ask the user to upgrade via the tenant owner before proceeding.

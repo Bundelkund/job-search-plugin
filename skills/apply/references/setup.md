@@ -2,8 +2,11 @@
 
 > How a new user connects the apply skill to their personal data. Three steps; takes about 10 minutes.
 
-## Step 1: Install the tenant-mcp connector
+## Step 1: Install the tenant connector
 
+**Claude Code:** install via the plugin — `/plugin marketplace add Bundelkund/job-search-plugin` then `/plugin install job-search@konektos`. The tenant connector is included automatically.
+
+**Claude Desktop:**
 1. Obtain the `tenant-mcp.mcpb` connector file from the tenant owner (provisioned out-of-band)
 2. In Claude Desktop: **Settings → MCP Connectors → Install from file** → select the `.mcpb` file
 3. Enter your provisioned API key when prompted
@@ -13,7 +16,7 @@ The API key resolves server-side to your `profile_id`. No profile id is ever pas
 
 ## Step 2: Verify the connection
 
-Open a new Claude Desktop conversation and ask:
+Open a new conversation and ask:
 
 ```
 get_my_matches

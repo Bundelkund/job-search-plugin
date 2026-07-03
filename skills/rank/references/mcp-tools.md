@@ -1,6 +1,6 @@
 # MCP Tools Reference
 
-> The four tools exposed by the `tenant-mcp` connector. These are the only I/O the rank skill uses — no local filesystem, no direct API calls, no shell commands.
+> The four tools exposed by the tenant connector. These are the only I/O the rank skill uses — no local filesystem, no direct API calls, no shell commands.
 
 ---
 
@@ -125,5 +125,5 @@ save_application({
 |----------|---------|
 | `get_my_matches` returns empty list | Inform the user; suggest running the discovery pipeline first |
 | `get_job` returns 404 | Skip the job; note it in the ranking summary as "not found" |
-| Connector not installed / auth error | Stop and direct user to `references/setup.md` in `apply-skill` for connector setup |
+| Connector not installed / auth error | Stop and direct user to `references/setup.md` in `apply-skill` for setup |
 | Partial batch failure | Continue with successful jobs; report the failed job_ids at the end |

@@ -10,12 +10,12 @@ description: >
   "narrative", "/letter-forge".
 ---
 
-# /letter-forge — Career Narrative Questionnaire (Desktop)
+# /letter-forge — Career Narrative Questionnaire
 
 > Know your story before you write it.
 >
 > Builds the 5-field application profile that `/apply` and `/rank` read — entirely
-> in-conversation inside Claude Desktop. No local filesystem, no shell commands.
+> in-conversation via the tenant MCP tools. No local filesystem, no shell commands.
 
 ## When to use
 
@@ -32,7 +32,7 @@ Do **not** use for:
 
 ## Prerequisites
 
-- `tenant-mcp` connector (>= v0.2.0) installed in Claude Desktop with a provisioned API key
+- Tenant connector (>= v0.2.0) installed with a provisioned API key
 - No profile data required upfront — the skill builds it from scratch
 
 ---

@@ -77,6 +77,6 @@ Check the cover letter against `references/agent-prompt-template.md`:
 <!-- Adversarial Review: PASS | R1: posting-match 5->8, authenticity 8, jonas-rule 7, no-donts 9 -->
 ```
 
-## 4b: PDF rendering — TBD on Desktop
+## 4b: PDF rendering — TBD
 
-**PDF rendering — TBD on Desktop.** The desktop variant outputs the final cover letter + CV as polished Markdown; PDF export path is not yet wired (see project backlog). To create a PDF: copy the final Markdown into your preferred editor (e.g. Typora, VS Code + markdown-pdf, or a word processor) and export from there.
+**PDF rendering — TBD.** The skill outputs the final cover letter + CV as polished Markdown; PDF export is not yet wired (see project backlog). To create a PDF: copy the final Markdown into your preferred editor (e.g. Typora, VS Code + markdown-pdf, or a word processor) and export from there.

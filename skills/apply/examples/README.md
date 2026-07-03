@@ -16,7 +16,7 @@ Files included:
 ## What is **not** in here
 
 - Real personal data — every name, number, and company is invented
-- PDFs — in the Desktop variant, PDF export is handled outside the skill (copy Markdown to your preferred editor)
+- PDFs — PDF export is handled outside the skill (copy the final Markdown to your preferred editor)
 
 ## Verifying the example
 

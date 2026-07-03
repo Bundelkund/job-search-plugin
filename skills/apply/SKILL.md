@@ -3,9 +3,9 @@ name: apply
 description: Cover-letter + CV generator from job posting to ready-to-send Markdown. Fetches the job posting and your profile via MCP tools, runs job-fit analysis, CV tailoring, company research, cover letter writing, and adversarial review — entirely in-conversation. Use when user says "apply", "Bewerbung", "cover letter", "Anschreiben", "/apply".
 ---
 
-# /apply — Application Builder (Desktop)
+# /apply — Application Builder
 
-> From job posting to a polished cover letter + CV in Markdown. Runs fully in-conversation inside Claude Desktop — no local filesystem, no shell commands, no PDF pipeline.
+> From job posting to a polished cover letter + CV in Markdown. Runs fully in-conversation via the tenant MCP tools — no local filesystem, no shell commands, no PDF pipeline.
 
 ## When to use
 
@@ -16,13 +16,13 @@ Use this skill when:
 
 Do **not** use for:
 - Editing the user's profile directly (the tenant owner does that via `PUT /my/profile`)
-- Batch / automation runs (not available in the Desktop variant — see note below)
+- Batch / automation runs (not available in-conversation — see note below)
 
 ---
 
 ## Prerequisites
 
-- `tenant-mcp` connector installed in Claude Desktop and a provisioned API key (see `references/setup.md`)
+- Tenant connector installed and a provisioned API key (see `references/setup.md`)
 - Profile populated by the tenant owner via `PUT /my/profile` (5 fields required — see setup)
 
 ---
@@ -109,7 +109,7 @@ All output is in-conversation Markdown (no files written to disk):
 | `anschreiben` (cover letter) | Phase 3c |
 | Review notes | Phase 4 |
 
-**PDF export**: not available in the Desktop variant. Copy the final Markdown to your preferred editor for PDF export.
+**PDF export**: not available in-conversation. Copy the final Markdown to your preferred editor for PDF export.
 
 ---
 
@@ -129,7 +129,7 @@ All output is in-conversation Markdown (no files written to disk):
 
 ## Note: batch mode and automation
 
-Batch mode (parallel applications) and daily auto-apply automation are not available in the Desktop variant. For automation, use the Claude Code variant of this skill.
+Batch mode (parallel applications) and daily auto-apply automation are not available in-conversation. For automation, use the Claude Code variant of this skill.
 
 ---
 

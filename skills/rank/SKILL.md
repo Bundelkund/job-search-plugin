@@ -8,10 +8,10 @@ description: >
   Use when user says "rank", "rank jobs", "rank my matches", "/rank".
 ---
 
-# /rank — Job Match Re-Ranker (Desktop)
+# /rank — Job Match Re-Ranker
 
 > Re-ranks tenant match results by a fit rubric the USER defines.
-> Runs fully in-conversation inside Claude Desktop — no local filesystem, no shell commands.
+> Runs fully in-conversation via the tenant MCP tools — no local filesystem, no shell commands.
 > Companion pre-step to `/apply`.
 
 ## When to use
@@ -29,7 +29,7 @@ Do **not** use for:
 
 ## Prerequisites
 
-- `tenant-mcp` connector installed in Claude Desktop with a provisioned API key
+- Tenant connector installed with a provisioned API key
 - At least one job match in the tenant (`get_my_matches` returns results)
 - A rubric — either the user's own, or the worked example in `references/scoring-rubric.md`
 
