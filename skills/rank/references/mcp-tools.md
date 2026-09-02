@@ -112,8 +112,12 @@ save_application({
   company?: string,
   role?: string,
   notes?: string
-}) → { ok: boolean, id: string }
+}) → { ..., effective: boolean, displayed_status: string }
 ```
+
+The response echoes the written event plus `effective`/`displayed_status` — see
+`/dispatch`'s `references/mcp-tools.md` for the full shape and why `effective` matters
+(it's an event log, not an overwrite; a later-dated event can outrank this write).
 
 **Usage note for `/rank`**: Use `status: "drafted"` when the user marks a pick from the ranking. This flags the job for `/apply` and prevents it from appearing as "unreviewed" in future ranking runs (unless `--refresh` is passed).
 

@@ -1,6 +1,6 @@
 # Job Search — Claude Code Plugin
 
-> Build your application profile, re-rank your job matches, and generate cover letters + CVs — all inside Claude Code. Bundles three skills plus the tenant MCP connector in one install.
+> Build your application profile, re-rank your job matches, generate cover letters + CVs, and track what happened — all inside Claude Code. Bundles four skills plus the tenant MCP connector in one install.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -11,6 +11,7 @@
 | `letter-forge` | skill | Builds your application profile via `set_my_profile` — paste a CV/past cover letters/other documents to draft it, or answer the interactive questionnaire for what's left |
 | `rank` | skill | Re-ranks your job matches by a fit rubric you define |
 | `apply` | skill | Turns a job posting into a cover letter + CV |
+| `dispatch` | skill | Logs an application's status (applied/interview/offer/rejected/paused) in the tracker via `save_application` — after you've submitted it yourself; no portal or email automation |
 | `tenant` | MCP server | Connects to the tenant service — your matches, job text, profile, tracker |
 
 The skills read and write your personal data **only** through the bundled `tenant` MCP server, scoped to your own API key. No local database, no PDF toolchain.
@@ -43,9 +44,10 @@ By default the connector targets `https://tenant.konektos.de`. Restart Claude Co
 /job-search:letter-forge     # first run only — build your profile
 /job-search:rank             # re-rank your current matches
 /job-search:apply <job_id>   # write the application for one job
+/job-search:dispatch         # log what happened after you send it yourself
 ```
 
-Typical flow: `letter-forge` once → `rank` to find the best jobs → `apply` on the top pick.
+Typical flow: `letter-forge` once → `rank` to find the best jobs → `apply` on the top pick → send it yourself → `dispatch` to log it.
 
 ## How it fits together
 
@@ -54,6 +56,7 @@ Discovery Engine (central) ──► Tenant service (central) ──► tenant M
                                                                   │
                                     letter-forge ─ writes ──► your profile
                                     rank / apply ─ read ────► matches + profile
+                                    dispatch ─── writes ───► your tracker
 ```
 
 ## Individual skills

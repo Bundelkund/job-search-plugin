@@ -1,11 +1,11 @@
 {
   "name": "job-search",
   "displayName": "Job Search — Profile, Rank, Apply",
-  "version": "0.3.0",
-  "description": "Build your application profile, re-rank your job matches, and generate cover letters + CVs. Bundles the letter-forge, rank, and apply skills plus the tenant MCP connector.",
+  "version": "0.4.0",
+  "description": "Build your application profile, re-rank your job matches, generate cover letters + CVs, and track outcomes. Bundles the letter-forge, rank, apply, and dispatch skills plus the tenant MCP connector.",
   "author": { "name": "Florian Rister", "email": "florian@konektos.de" },
   "repository": "https://github.com/Bundelkund/job-search-plugin",
   "license": "MIT",
-  "keywords": ["jobs", "career", "apply", "cover-letter", "ranking", "profile"],
+  "keywords": ["jobs", "career", "apply", "cover-letter", "ranking", "profile", "tracker"],
   "mcpServers": "./.mcp.json"
 }
