@@ -52,7 +52,7 @@ See `references/mcp-tools.md` for full signatures and response shapes.
 
 ### Phase 1: Load rubric + profile
 
-1. **Rubric** — ask the user: "Do you want to use the example Coaching × AI rubric, or define your own?" If own: guide them through two weighted dimensions (0–40 each) + an intersection bonus (0–20) = 100 total. Default fallback: the worked example in `references/scoring-rubric.md`.
+1. **Rubric** — ask the user: "Do you want to use the example Coaching × AI rubric, or define your own?" If own: guide them through two weighted dimensions (0–40 each) + an intersection bonus (0–20) + a requirements-gap penalty (0 to −20, for postings that demand something you don't have) = up to 100 total. Default fallback: the worked example in `references/scoring-rubric.md`.
 2. **Profile** — call `get_my_profile()` and extract the `positioning` field. This becomes the calibration anchor for the archetype cards.
 3. **Archetype cards** — ask the user for 2–3 reference roles or application types that represent their ideal fit. These become few-shot anchors for the scoring agents. See `references/archetype-cards.md` for the pattern.
 
@@ -79,6 +79,7 @@ Output per job (JSON):
   "dim_a_score": 0-40,
   "dim_b_score": 0-40,
   "intersection_score": 0-20,
+  "requirements_gap": 0 to -20,
   "total": 0-100,
   "best_archetype": "archetype-label | none",
   "reasoning": "1-2 sentences",
@@ -86,6 +87,8 @@ Output per job (JSON):
   "recommend": true | false
 }
 ```
+
+`total = dim_a_score + dim_b_score + intersection_score + requirements_gap` (the gap term is negative or zero — see `references/scoring-rubric.md` for why this dimension exists: it catches roles that score perfectly on content but are unreachable because of a hard must-have you don't meet).
 
 Red flag heuristics (automatic — agents apply these without being told explicitly):
 
@@ -95,16 +98,17 @@ Red flag heuristics (automatic — agents apply these without being told explici
 | `empty_description` | Description blank or < 50 chars |
 | `boilerplate_only` | Posting is entirely generic copy, no specific role requirements |
 | `title_company_mismatch` | Title signals one role, company signals an unrelated sector |
+| `requirements_gap` | `requirements_gap` deduction is −8 or worse |
 
 ### Phase 4: Aggregate + present
 
 Sort by `total` descending. Present the ranked table in-conversation:
 
 ```
-| Rank | Score | Dim A | Dim B | ∩ | Company       | Title               | Location | Archetype | Flags | Rec |
-|------|-------|-------|-------|---|---------------|---------------------|----------|-----------|-------|-----|
-|  1   |  88   |  38   |  32   | 18| Nexus Labs    | AI Training Lead    | Berlin   | coach-ai  |       |  ✓  |
-|  2   |  74   |  28   |  30   | 16| Orbit GmbH    | Learning Architect  | Remote   | enabler   |       |  ✓  |
+| Rank | Score | Dim A | Dim B | ∩ | Gap | Company       | Title               | Location | Archetype | Flags | Rec |
+|------|-------|-------|-------|---|-----|---------------|---------------------|----------|-----------|-------|-----|
+|  1   |  88   |  38   |  32   | 18|  0  | Nexus Labs    | AI Training Lead    | Berlin   | coach-ai  |       |  ✓  |
+|  2   |  74   |  28   |  30   | 16|  0  | Orbit GmbH    | Learning Architect  | Remote   | enabler   |       |  ✓  |
 ...
 ```
 
@@ -140,6 +144,7 @@ Ask: "Do you want to mark any of these as drafted?" If yes: call `save_applicati
 - Inlining the full rubric logic here — keep it in `references/scoring-rubric.md`
 - Writing cover letters inside this skill — hand off to `/apply`
 - Copying the worked example rubric as if it were the user's rubric — always confirm first
+- Skipping the requirements-gap dimension — a role that scores well on content but fails a hard must-have is a guaranteed rejection, not a top pick; scoring content alone puts unreachable roles at the top
 
 ---
 

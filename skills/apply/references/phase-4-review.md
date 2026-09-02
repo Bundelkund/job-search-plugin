@@ -77,6 +77,6 @@ Check the cover letter against `references/agent-prompt-template.md`:
 <!-- Adversarial Review: PASS | R1: posting-match 5->8, authenticity 8, jonas-rule 7, no-donts 9 -->
 ```
 
-## 4b: PDF rendering — TBD
+## 4b: Handoff — no PDF export by design
 
-**PDF rendering — TBD.** The skill outputs the final cover letter + CV as polished Markdown; PDF export is not yet wired (see project backlog). To create a PDF: copy the final Markdown into your preferred editor (e.g. Typora, VS Code + markdown-pdf, or a word processor) and export from there.
+This skill's output is polished Markdown, delivered in-conversation — not a rendered file. That is a deliberate boundary, not a missing feature: PDF export needs shell commands and local filesystem access, which this skill does not have and does not try to work around. To produce a PDF: copy the final Markdown into your preferred editor (e.g. Typora, VS Code + a markdown-to-PDF extension, or a word processor) and export from there.

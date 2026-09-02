@@ -26902,7 +26902,7 @@ function registerTools(server, cfg) {
     "get_job",
     {
       title: "Stellentext",
-      description: "Voller Stellentext (description) zu einer job_id aus get_my_matches. Pflicht-Input f\xFCrs Anschreiben \u2014 die Match-Liste enth\xE4lt nur Metadaten.",
+      description: "Voller Stellentext (description) zu einer job_id aus get_my_matches. Pflicht-Input f\xFCrs Anschreiben \u2014 die Match-Liste enth\xE4lt nur Metadaten. Tr\xE4gt die Antwort das Feld degraded, war die Stellen-Datenbank nicht erreichbar: dann gibt es NUR Titel/Firma/Ort/Link und description ist null. In dem Fall kein Anschreiben schreiben, sondern sagen, dass der Stellentext fehlt \u2014 ein Anschreiben ohne Stellentext ist geraten.",
       inputSchema: {
         job_id: external_exports.string().min(1).describe("job_id aus get_my_matches.")
       },
@@ -26967,7 +26967,7 @@ function registerTools(server, cfg) {
     "save_application",
     {
       title: "Bewerbung tracken",
-      description: "Speichert/aktualisiert eine erstellte Bewerbung im pers\xF6nlichen Tracker. Schreib-Operation \u2014 nur nach Erstellung von Anschreiben + CV aufrufen.",
+      description: "Speichert/aktualisiert eine erstellte Bewerbung im pers\xF6nlichen Tracker. Schreib-Operation \u2014 nur nach Erstellung von Anschreiben + CV aufrufen. Die Antwort tr\xE4gt effective: steht dort false, wurde das Ereignis zwar gespeichert, \xE4ndert aber den angezeigten Stand NICHT (ein \xE4lteres Datum liegt hinter einem neueren Eintrag). displayed_status nennt dann, was stattdessen gilt. Gespeichert ist nicht gleich sichtbar \u2014 nicht ungepr\xFCft Erfolg melden.",
       inputSchema: {
         job_id: external_exports.string().min(1).describe("job_id der Bewerbung."),
         status: external_exports.string().min(1).describe(

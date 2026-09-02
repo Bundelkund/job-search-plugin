@@ -88,10 +88,27 @@ These cards accompany the worked example in `references/scoring-rubric.md`. They
 
 ---
 
+### gap-blocked — perfect content, unreachable requirement
+
+**Role pattern**: Reads, on content alone, like a top match — strong coaching signal, strong AI signal, tight intersection. But the posting's must-have list includes a hard requirement the candidate does not meet (e.g. "3+ years professional software engineering", a specific degree, native fluency in a language they don't speak).
+
+**Scoring anchor** (Coaching × AI rubric):
+- Dimension A (Coaching): 30 — strong coaching/enablement content
+- Dimension B (AI): 34 — strong AI implementation content
+- Intersection: 15 — structurally requires both
+- Requirements Gap: −16 — must-have "3+ years production software engineering" is not met
+- **Total: 63** (would be ~79 without the gap penalty)
+
+**Signals in the posting**: strong Dimension A/B language, PLUS a must-have clause naming a credential, years-of-practice, or technical background the candidate's profile does not show — check the "requirements" or "must have" section specifically, not just the role description.
+
+**Distance from ideal**: Content-wise a strong match; practically a near-certain rejection. This is why the Requirements Gap dimension exists — without it, this card would rank above `enabler` despite being the worse pick.
+
+---
+
 ## Using cards in the scoring prompt
 
-When briefing a scoring subagent, include all three cards verbatim with this instruction:
+When briefing a scoring subagent, include all four cards verbatim with this instruction:
 
-> "Score each job using the rubric dimensions. Use the following archetype cards as calibration anchors — a job that looks like [coach-ai-full] scores around 86; a job like [enabler] scores around 59; a job like [adjacent] scores around 47. Interpolate or extrapolate from there. Do not anchor mechanically — use the cards for intuition, not formula."
+> "Score each job using the rubric dimensions. Use the following archetype cards as calibration anchors — a job that looks like [coach-ai-full] scores around 86; a job like [enabler] scores around 59; a job like [adjacent] scores around 47; a job like [gap-blocked] scores around 63 despite strong content, because of the requirements-gap penalty. Interpolate or extrapolate from there. Do not anchor mechanically — use the cards for intuition, not formula."
 
-The key is "interpolate" — agents should feel free to score above 86 (if a role is even more concentrated on the intersection) or below 47 (if it barely touches either dimension).
+The key is "interpolate" — agents should feel free to score above 86 (if a role is even more concentrated on the intersection) or below 47 (if it barely touches either dimension). The `gap-blocked` card is not on the same content spectrum as the other three — it's a reminder to check the must-have list separately from how well the role reads.

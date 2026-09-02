@@ -1,7 +1,7 @@
 {
   "name": "job-search",
   "displayName": "Job Search — Profile, Rank, Apply",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Build your application profile, re-rank your job matches, and generate cover letters + CVs. Bundles the letter-forge, rank, and apply skills plus the tenant MCP connector.",
   "author": { "name": "Florian Rister", "email": "florian@konektos.de" },
   "repository": "https://github.com/Bundelkund/job-search-plugin",
