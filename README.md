@@ -8,7 +8,7 @@
 
 | Component | Type | What it does |
 |-----------|------|--------------|
-| `letter-forge` | skill | Interactive questionnaire → writes your application profile via `set_my_profile` |
+| `letter-forge` | skill | Builds your application profile via `set_my_profile` — paste a CV/past cover letters/other documents to draft it, or answer the interactive questionnaire for what's left |
 | `rank` | skill | Re-ranks your job matches by a fit rubric you define |
 | `apply` | skill | Turns a job posting into a cover letter + CV |
 | `tenant` | MCP server | Connects to the tenant service — your matches, job text, profile, tracker |
