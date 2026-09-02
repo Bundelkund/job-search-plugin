@@ -26992,13 +26992,65 @@ function registerTools(server, cfg) {
       }
     }
   );
+  server.registerTool(
+    "save_interview",
+    {
+      title: "Interview-Runde speichern",
+      description: "Speichert/aktualisiert eine Interview-Runde f\xFCr eine Stelle. Schreib-Operation, keyed auf (job_id, stage) \u2014 ein zweiter Aufruf mit derselben stage schreibt in dieselbe Zeile weiter (z.B. erst prep_notes VOR dem Termin, dann debrief_notes DANACH), ohne bereits gesetzte Felder zu l\xF6schen. Nur mitgeschickte Felder werden ge\xE4ndert. Andere stage (z.B. 'onsite' statt 'screening') \u2192 eigene, neue Zeile.",
+      inputSchema: {
+        job_id: external_exports.string().min(1).describe("job_id der Stelle, zu der die Runde geh\xF6rt."),
+        stage: external_exports.string().min(1).describe(
+          "Freitext-Bezeichnung der Runde, z.B. 'screening', 'technical', 'onsite', 'final'. Identifiziert zusammen mit job_id die Zeile \u2014 zweiter Aufruf mit gleicher stage aktualisiert statt eine neue Runde anzulegen."
+        ),
+        company: external_exports.string().optional().describe("Firmenname."),
+        role: external_exports.string().optional().describe("Rollen-/Stellentitel."),
+        scheduled_at: external_exports.string().optional().describe("ISO-8601-Zeitpunkt des Termins, falls bekannt."),
+        prep_notes: external_exports.string().optional().describe("Vorbereitungsnotizen, vor dem Termin geschrieben."),
+        debrief_notes: external_exports.string().optional().describe("Nachbereitungsnotizen, nach dem Termin geschrieben."),
+        outcome: external_exports.string().optional().describe("Freitext-Ergebnis der Runde, z.B. 'weiter zur n\xE4chsten Runde', 'abgesagt'.")
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
+    },
+    async ({ job_id, stage, company, role, scheduled_at, prep_notes, debrief_notes, outcome }) => {
+      try {
+        const data = await tenantRequest(cfg, {
+          method: "POST",
+          path: "/my/interviews",
+          body: { job_id, stage, company, role, scheduled_at, prep_notes, debrief_notes, outcome }
+        });
+        return ok(data);
+      } catch (err) {
+        return fail(err);
+      }
+    }
+  );
+  server.registerTool(
+    "get_my_interviews",
+    {
+      title: "Meine Interview-Runden",
+      description: "Liefert deine gespeicherten Interview-Runden, neueste zuerst. Optional auf eine job_id gefiltert \u2014 z.B. um vor einem debrief-Aufruf die passende stage einer Runde zu finden.",
+      inputSchema: {
+        job_id: external_exports.string().optional().describe("Nur Runden dieser Stelle liefern.")
+      },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
+    },
+    async ({ job_id }) => {
+      try {
+        const path = job_id ? `/my/interviews?job_id=${encodeURIComponent(job_id)}` : "/my/interviews";
+        const data = await tenantRequest(cfg, { path });
+        return ok(data);
+      } catch (err) {
+        return fail(err);
+      }
+    }
+  );
 }
 
 // src/index.ts
 async function main() {
   const cfg = loadConfig();
   const server = new McpServer(
-    { name: "tenant-mcp", version: "0.2.0" },
+    { name: "tenant-mcp", version: "0.3.0" },
     {
       instructions: "Pers\xF6nlicher Job-/Bewerbungs-Zugang. Reihenfolge: get_my_matches (Trefferliste) \u2192 get_job(job_id) f\xFCr den vollen Stellentext \u2192 get_my_profile als Lese-Quelle. set_my_profile schreibt das Profil (Onboarding/letter-forge). save_application erst nach fertiger Bewerbung. Jeder Aufruf ist auf den eigenen API-Key gescoped."
     }

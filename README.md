@@ -1,6 +1,6 @@
 # Job Search — Claude Code Plugin
 
-> Build your application profile, re-rank your job matches, generate cover letters + CVs, and track what happened — all inside Claude Code. Bundles four skills plus the tenant MCP connector in one install.
+> Build your application profile, re-rank your job matches, generate cover letters + CVs, track what happened, and prep/debrief interviews — all inside Claude Code. Bundles five skills plus the tenant MCP connector in one install.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -12,7 +12,8 @@
 | `rank` | skill | Re-ranks your job matches by a fit rubric you define |
 | `apply` | skill | Turns a job posting into a cover letter + CV |
 | `dispatch` | skill | Logs an application's status (applied/interview/offer/rejected/paused) in the tracker via `save_application` — after you've submitted it yourself; no portal or email automation |
-| `tenant` | MCP server | Connects to the tenant service — your matches, job text, profile, tracker |
+| `interview` | skill | Preps an interview dossier via `save_interview`, then records the debrief afterward — kept separate from your profile by design |
+| `tenant` | MCP server | Connects to the tenant service — your matches, job text, profile, tracker, interviews |
 
 The skills read and write your personal data **only** through the bundled `tenant` MCP server, scoped to your own API key. No local database, no PDF toolchain.
 
@@ -45,9 +46,10 @@ By default the connector targets `https://tenant.konektos.de`. Restart Claude Co
 /job-search:rank             # re-rank your current matches
 /job-search:apply <job_id>   # write the application for one job
 /job-search:dispatch         # log what happened after you send it yourself
+/job-search:interview        # prep before a round, debrief after it
 ```
 
-Typical flow: `letter-forge` once → `rank` to find the best jobs → `apply` on the top pick → send it yourself → `dispatch` to log it.
+Typical flow: `letter-forge` once → `rank` to find the best jobs → `apply` on the top pick → send it yourself → `dispatch` to log it → `interview` when a round gets scheduled, and again right after it happens.
 
 ## How it fits together
 
@@ -57,6 +59,10 @@ Discovery Engine (central) ──► Tenant service (central) ──► tenant M
                                     letter-forge ─ writes ──► your profile
                                     rank / apply ─ read ────► matches + profile
                                     dispatch ─── writes ───► your tracker
+                                    interview ── writes ───► your interview rounds
+                                                              (never your profile — see
+                                                              the interview skill's
+                                                              separation rule)
 ```
 
 ## Individual skills
