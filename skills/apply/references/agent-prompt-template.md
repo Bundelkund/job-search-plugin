@@ -1,12 +1,12 @@
 # Writing reference — /apply
 
-> The writing rules this skill follows. Tone and structure live here — not in SKILL.md. All profile data is loaded at runtime via `get_my_profile()`.
+> The writing rules this skill follows. Tone and structure live here — not in SKILL.md. All profile data is loaded at runtime (see `storage.md`).
 
 ---
 
 ## Profile context (loaded at runtime)
 
-The five fields from `get_my_profile()` map as follows:
+The five profile fields map as follows:
 
 | Field | Content |
 |-------|---------|
@@ -16,7 +16,7 @@ The five fields from `get_my_profile()` map as follows:
 | `skills_matrix` | Skills with evidence (not a self-assessment scale) |
 | `writing_style` | Tone, language rules, DON'Ts |
 
-At runtime, load the full profile once via `get_my_profile()`. On edge cases (unclear fit, missing evidence) reload and re-examine the relevant field.
+At runtime, load the full profile once (see `storage.md`). On edge cases (unclear fit, missing evidence) reload and re-examine the relevant field.
 
 ---
 

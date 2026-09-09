@@ -1,10 +1,18 @@
 # Phase 5: Completion
 
-## 5a: Tracker update
+## 5a: Save the documents and open the tracker entry
 
-Call `save_application` after the cover letter is ready. Do this at the end of Phase 3c (not only after Phase 4 review) so the application is logged even if the session ends before review.
+Do this at the end of Phase 3c (not only after Phase 4 review) so the work
+survives even if the session ends before review.
 
-**First save** (end of Phase 3c or after Phase 4 review):
+**`local` (default)** — create `~/job-search/applications/<slug>/` and write:
+`job-posting.md`, `job-fit-analysis.md`, `cv.md`, `cover-letter.md`, and
+`application.md` with `status: drafted` plus the fit score and channel as notes.
+Then regenerate `applications/INDEX.md`, read the files back, and tell the user
+the folder path. Full text, never a summary — this is the only copy. See
+`storage.md` for the layout and frontmatter.
+
+**`tenant`** — the documents stay in the conversation; write the tracker entry:
 
 ```
 save_application({
@@ -27,7 +35,10 @@ save_application({
 | `rejected` | Rejected |
 | `paused` | On hold |
 
-Update the status after each lifecycle change by calling `save_application` again with the new status (the tracker is an event log — each call appends a row).
+Update the status after each lifecycle change — `local`: edit `status` and
+`updated` in `application.md`, then regenerate `INDEX.md`; `tenant`: call
+`save_application` again with the new status (there the tracker is an event log,
+each call appends a row). `/dispatch` does this for you in both modes.
 
 ## 5b: Application channel research (mandatory)
 
@@ -51,7 +62,7 @@ Include the channel finding in the `notes` field when calling `save_application`
 
 ## 5c: Prepare company-specific questions
 
-1. Use `writing_style` and `positioning` from `get_my_profile()` for context
+1. Use `writing_style` and `positioning` from the profile for context
 2. Add company context from Phase 3a research
 3. Formulate 2–3 questions: 1x role, 1x culture, 1x optional strategic
 

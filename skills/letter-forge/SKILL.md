@@ -8,8 +8,9 @@ description: >
   questionnaire for only what the documents didn't cover. Without documents, runs
   the full questionnaire: 5 parts (~35 questions) covering story & origin, values,
   assessment-centre evidence, STAR stories, and happiness alignment.
-  Reads existing profile first (gap-fill mode), shows synthesized fields for confirmation,
-  then writes them via set_my_profile.
+  Reads the existing profile first (gap-fill mode), shows synthesized fields for
+  confirmation, then saves them — to ~/job-search/profile.md by default, or via
+  set_my_profile where no file tool exists.
   Use when user says "letter forge", "career questionnaire", "build my profile",
   "narrative", "upload my CV", "/letter-forge".
 ---
@@ -18,8 +19,9 @@ description: >
 
 > Know your story before you write it.
 >
-> Builds the 5-field application profile that `/apply` and `/rank` read — entirely
-> in-conversation via the tenant MCP tools. No local filesystem, no shell commands.
+> Builds the 5-field application profile that `/apply` and `/rank` read. The
+> questionnaire runs in the conversation; the result is saved as
+> `~/job-search/profile.md` by default. No shell commands.
 
 ## When to use
 
@@ -29,27 +31,33 @@ description: >
 
 Do **not** use for:
 - Writing a cover letter — hand that off to `/apply <job_id>`
-- Quick CV edits — call `set_my_profile({ cv_text: "..." })` directly
+- Quick CV edits — edit the `## CV` section of `profile.md` directly (or call
+  `set_my_profile({ cv_text: "..." })` in `tenant` mode)
 - Ranking jobs — use `/rank`
 
 ---
 
 ## Prerequisites
 
-- Tenant connector (>= v0.2.0) installed with a provisioned API key
+- Tenant connector (>= v0.2.0) with a provisioned API key — required in
+  `tenant` storage mode, unused in `local` mode
+- Somewhere to write: `$JOB_SEARCH_HOME`, or `~/job-search` by default. Read
+  `references/storage.md` before the first read or write of this run — it
+  decides local vs. tenant and fixes the file format
 - No profile data required upfront — the skill builds it from scratch, from documents,
   or a mix of both
 
 ---
 
-## MCP tools (the only I/O)
+## I/O
 
-| Tool | Purpose |
-|------|---------|
-| `get_my_profile()` | Read existing profile — used in Phase 1 to identify gaps |
-| `set_my_profile({...})` | Write profile — partial update, only passed fields are changed |
+| Purpose | `local` (default) | `tenant` |
+|---------|-------------------|----------|
+| Read existing profile (Phase 1 gap check) | read `~/job-search/profile.md` | `get_my_profile()` |
+| Save confirmed fields | update the matching `##` sections of `profile.md`, leaving the others untouched | `set_my_profile({...})` — partial, only passed fields change |
 
-See `references/mcp-tools.md` for full signatures.
+Both ways are partial updates by design. See `references/storage.md` for the
+file format and `references/mcp-tools.md` for the tool signatures.
 
 ---
 
@@ -57,7 +65,8 @@ See `references/mcp-tools.md` for full signatures.
 
 ### Phase 1: Profile check + document offer
 
-1. Call `get_my_profile()`.
+1. Read the existing profile — `local`: `~/job-search/profile.md` (a missing
+   file means an empty profile, not an error); `tenant`: `get_my_profile()`.
 2. Show the user which of the five fields already have content and which are empty or thin.
 3. Ask: "Do you have a CV, past cover letters, or any other document you'd consider
    relevant (reference letter, portfolio summary, LinkedIn export, ...) to start from?
@@ -119,10 +128,19 @@ After the questionnaire (or after each part if the user prefers incremental save
 3. Ask: "Does this capture it? Edit anything before I save?"
 4. Apply edits if requested, then write.
 
-### Phase 4: Write via MCP
+### Phase 4: Save
 
-Call `set_my_profile` with the confirmed fields. You may write one field at a time —
-partial update is supported, existing fields are untouched.
+Save the confirmed fields. Either way this is a partial update: fields you have
+nothing new for stay exactly as they are.
+
+**`local` (default):** update the matching `##` sections of
+`~/job-search/profile.md`, set `updated:` to today, leave every other section
+byte-for-byte intact, then read the file back and print its path. Read
+`references/storage.md` for the section headings — they are fixed, because
+`/apply`, `/rank` and `/interview` read this file.
+
+**`tenant`:** call `set_my_profile` with the confirmed fields. You may write one
+field at a time — partial update is supported, existing fields are untouched.
 
 ```
 set_my_profile({
@@ -151,21 +169,28 @@ Part 4: STAR Evidence        not started
 Part 5: Positioning          not started
 ```
 
-No files are written mid-session — progress lives in-conversation only.
+Mid-questionnaire progress lives in the conversation only — nothing is written
+until the user confirms the synthesized fields in Phase 3.
 
 ---
 
 ## Anti-patterns
 
 - Asking all questions at once (ask 3–4 per turn, wait for answers)
-- Writing to `set_my_profile` before showing the user the synthesized text
-- Overwriting existing profile fields without user confirmation
+- Saving — to file or server — before showing the user the synthesized text
+- Overwriting existing profile fields without user confirmation, and — locally —
+  rewriting `profile.md` as a whole instead of updating the sections you changed
 - Evaluating or judging answers ("that's great!") — acknowledge briefly, move on
 - Skipping the profile check in Phase 1
 - Treating a document extraction as final without showing it for confirmation
 - Marking `writing_style` as covered from a CV alone — a CV has no voice to extract;
   only actual past prose (cover letter, review, similar) supports that field
-- Saving any uploaded document's raw text into a file — it is conversation input only
+- Saving an uploaded document's raw text anywhere as-is — it is input for the
+  synthesis, not profile content (the `## CV` section holds your synthesized CV
+  text, not a dumped file)
+- Reporting a save you did not verify — read the file back and print its path,
+  or say plainly that the write failed (see `references/storage.md`)
+- Asking the user which storage mode to use — decide it, then say which one
 
 ---
 
@@ -173,6 +198,7 @@ No files are written mid-session — progress lives in-conversation only.
 
 | File | Purpose |
 |------|---------|
+| `references/storage.md` | **Read first.** local vs. tenant mode, the `profile.md` format and its fixed headings, section-wise updates, verify-after-write |
 | `references/document-import.md` | How to draft profile fields from a pasted CV/cover letters/other documents, and how to identify what's still a gap |
 | `references/questionnaire.md` | Full question bank (5 parts, ~35 questions) |
 | `references/synthesis.md` | How answers map to the 5 profile fields |

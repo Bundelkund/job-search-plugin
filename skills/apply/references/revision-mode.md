@@ -29,7 +29,7 @@ Map the feedback to the affected paragraphs or sections:
 
 ### R3: Re-load profile and job context
 
-Call `get_my_profile()` and confirm the `job_id` / job posting are still in context. If the conversation context has shifted, re-call `get_job(job_id)` to refresh the posting text.
+Reload the profile (`storage.md`) and confirm the `job_id` / job posting are still in context. If the conversation context has shifted, re-call `get_job(job_id)` to refresh the posting text.
 
 ### R4: Apply the revision
 

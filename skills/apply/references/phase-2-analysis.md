@@ -1,6 +1,6 @@
 # Phase 2: Analysis
 
-**Profile source**: all profile data comes from `get_my_profile()` — the five fields (`positioning`, `cv_text`, `achievements`, `skills_matrix`, `writing_style`) replace the old `profile/*.md` files exactly 1:1.
+**Profile source**: all profile data comes from the profile (`storage.md`) — the five fields (`positioning`, `cv_text`, `achievements`, `skills_matrix`, `writing_style`) replace the old `profile/*.md` files exactly 1:1.
 
 ## 2a: Job-fit check
 

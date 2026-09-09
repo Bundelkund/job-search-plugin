@@ -1,6 +1,11 @@
 # MCP Tools Reference
 
-> The five tools `/interview` uses. Only I/O — no local filesystem, no shell commands, no email search, no browser.
+> The five tools `/interview` can use. No shell commands, no email search, no browser.
+>
+> `get_job` is used in both storage modes. `get_my_profile`, `save_application`,
+> `save_interview` and `get_my_interviews` apply to `tenant` mode only — in
+> `local` mode (the default) the profile, the tracker and the interview notes
+> are Markdown files instead. See `storage.md`.
 
 ---
 

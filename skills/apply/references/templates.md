@@ -6,7 +6,7 @@
 
 ## Cover letter (Anschreiben)
 
-One page maximum. All placeholder text in `{{...}}` is replaced from `get_my_profile()` + `get_job()` at runtime.
+One page maximum. All placeholder text in `{{...}}` is replaced from the profile + `get_job()` at runtime.
 
 ```markdown
 ---

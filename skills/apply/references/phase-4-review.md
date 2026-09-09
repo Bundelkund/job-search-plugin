@@ -33,7 +33,7 @@ Check the cover letter against `references/agent-prompt-template.md`:
 
 - [ ] **Coverage**: every bullet in the coverage list (Phase 2a item 6) is addressed in the cover letter — including distinct sub-responsibilities
 - [ ] **Gaps in opening**: every gap rated Medium or above (Phase 2a item 7) is named in paragraph 1, not as a closing hedge
-- [ ] **Claims grounded**: every employer name, job title, skill claim, and number in the cover letter is traceable to `get_my_profile()` fields — no template residue, no invented figures. Backstop to the Phase 3c grounding gate.
+- [ ] **Claims grounded**: every employer name, job title, skill claim, and number in the cover letter is traceable to a profile field — no template residue, no invented figures. Backstop to the Phase 3c grounding gate.
 - [ ] **Channel discipline**: no salary expectation / availability / preferred hours in the cover letter when the posting names a portal or form for those
 - [ ] **Taxonomy adopted**: the cover letter uses the competency dimensions the posting itself named (Phase 2a item 9) as its structural axis, not self-invented categories
 
@@ -55,7 +55,7 @@ Check the cover letter against `references/agent-prompt-template.md`:
    | `posting-match` | Every must-have requirement from the posting is addressed. Count missing keywords. Compare posting paragraph by paragraph with the letter. |
    | `authenticity` | No generic filler, concrete examples with numbers / context, no "I am highly motivated" style. Mark every sentence that would also fit another role. |
    | `jonas-rule` | Paragraphs 2–3 show concrete value for the company, not just what the candidate can do. Check that "Sie/Ihr/your company" appears more often than "Ich/I/my". |
-   | `no-donts` | None of the DON'Ts in `writing_style` (from `get_my_profile()`) are violated. Check against the DON'T list. |
+   | `no-donts` | None of the DON'Ts in `writing_style` (from the profile) are violated. Check against the DON'T list. |
 
    Produce output as a YAML block:
    ```yaml

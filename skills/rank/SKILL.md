@@ -11,7 +11,7 @@ description: >
 # /rank — Job Match Re-Ranker
 
 > Re-ranks tenant match results by a fit rubric the USER defines.
-> Runs fully in-conversation via the tenant MCP tools — no local filesystem, no shell commands.
+> Matches and postings come from the tenant connector, your profile from `~/job-search/profile.md` by default. No shell commands.
 > Companion pre-step to `/apply`.
 
 ## When to use
@@ -30,12 +30,14 @@ Do **not** use for:
 ## Prerequisites
 
 - Tenant connector installed with a provisioned API key
+- A profile to calibrate against — `~/job-search/profile.md` by default; read
+  `references/storage.md` before loading it
 - At least one job match in the tenant (`get_my_matches` returns results)
 - A rubric — either the user's own, or the worked example in `references/scoring-rubric.md`
 
 ---
 
-## MCP tools (the only I/O)
+## I/O
 
 See `references/mcp-tools.md` for full signatures and response shapes.
 
@@ -43,7 +45,7 @@ See `references/mcp-tools.md` for full signatures and response shapes.
 |------|---------|
 | `get_my_matches(min_score?, limit?)` | Ranked job list — metadata only |
 | `get_job(job_id)` | Full posting text — needed for scoring |
-| `get_my_profile()` | User profile — drives rubric calibration |
+| the profile — `~/job-search/profile.md` locally, `get_my_profile()` on the server | Drives rubric calibration (see `references/storage.md`) |
 | `save_application({job_id, status, ...})` | Optional: mark picks as "drafted" |
 
 ---
@@ -53,7 +55,7 @@ See `references/mcp-tools.md` for full signatures and response shapes.
 ### Phase 1: Load rubric + profile
 
 1. **Rubric** — ask the user: "Do you want to use the example Coaching × AI rubric, or define your own?" If own: guide them through two weighted dimensions (0–40 each) + an intersection bonus (0–20) + a requirements-gap penalty (0 to −20, for postings that demand something you don't have) = up to 100 total. Default fallback: the worked example in `references/scoring-rubric.md`.
-2. **Profile** — call `get_my_profile()` and extract the `positioning` field. This becomes the calibration anchor for the archetype cards.
+2. **Profile** — load the profile as `references/storage.md` prescribes and take its `positioning` section. This becomes the calibration anchor for the archetype cards.
 3. **Archetype cards** — ask the user for 2–3 reference roles or application types that represent their ideal fit. These become few-shot anchors for the scoring agents. See `references/archetype-cards.md` for the pattern.
 
 ### Phase 2: Pull candidates
@@ -122,7 +124,10 @@ Reasoning: Strong match on both coaching and AI dimensions; intersection bonus f
 
 ### Phase 5: Optional save
 
-Ask: "Do you want to mark any of these as drafted?" If yes: call `save_application({job_id, status: "drafted", company, role})` for each pick.
+Ask: "Do you want to mark any of these as drafted?" If yes, record it for each
+pick the way `references/storage.md` prescribes — `local`: an `application.md`
+with `status: drafted` under `applications/<slug>/`, then regenerate `INDEX.md`;
+`tenant`: `save_application({job_id, status: "drafted", company, role})`.
 
 ---
 
@@ -152,6 +157,7 @@ Ask: "Do you want to mark any of these as drafted?" If yes: call `save_applicati
 
 | File | Purpose |
 |------|---------|
+| `references/storage.md` | **Read first.** local vs. tenant mode, where the profile lives, the `profile.md` format |
 | `references/mcp-tools.md` | Tool signatures, response shapes, error handling |
 | `references/scoring-rubric.md` | Generic rubric structure + Coaching × AI worked example |
 | `references/archetype-cards.md` | How to write archetype cards + fictional examples |

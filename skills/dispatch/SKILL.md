@@ -1,9 +1,10 @@
 ---
 name: dispatch
 description: >
-  Records what happened to an application in the tenant tracker — you mark it as
-  sent (or move it to interview / offer / rejected / paused) after you've actually
-  submitted it yourself. Runs fully in-conversation via save_application; it does
+  Records what happened to an application in your tracker — you mark it as sent
+  (or move it to interview / offer / rejected / paused) after you've actually
+  submitted it yourself. Writes to ~/job-search/applications by default, or via
+  save_application where no file tool exists; it does
   not fill in portal forms or send email on your behalf — the sending happens in
   your own browser or mail client, this skill only logs the outcome.
   Use when user says "I sent it", "mark as applied", "update application status",
@@ -14,9 +15,9 @@ description: >
 
 > You send it. This skill remembers what happened.
 >
-> Logs an application's status in the tenant tracker via `save_application` —
-> entirely in-conversation via the tenant MCP tools. No portal automation, no
-> email, no local filesystem, no shell commands.
+> Logs an application's status in your tracker — `~/job-search/applications` by
+> default, the tenant service where no file tool exists. No portal automation,
+> no email, no shell commands.
 
 ## When to use
 
@@ -37,22 +38,27 @@ Do **not** use for:
 
 ## Prerequisites
 
-- Tenant connector (>= v0.2.0) installed with a provisioned API key
+- Tenant connector (>= v0.2.0) with a provisioned API key — required in
+  `tenant` storage mode, and for the `get_my_matches()` lookup in both
+- Read `references/storage.md` before the first read or write of this run — it
+  decides local vs. tenant and fixes the tracker layout
 - A `job_id` to log against — usually from a prior `/apply <job_id>` run or from
   `get_my_matches()`
 
 ---
 
-## MCP tools (the only I/O)
+## I/O
 
-| Tool | Purpose |
-|------|---------|
-| `save_application({...})` | Write/update one application's status in the tracker |
-| `get_my_matches()` | Fallback lookup if the user gives a company/role but not a `job_id` |
+| Purpose | `local` (default) | `tenant` |
+|---------|-------------------|----------|
+| Write the status | update `applications/<slug>/application.md`, then regenerate `applications/INDEX.md` | `save_application({...})` |
+| Find a job by company/role | `get_my_matches()` — same in both modes | `get_my_matches()` |
 
-See `references/mcp-tools.md` for full signatures, the status enum, and the
-`effective`/`displayed_status` semantics — read that before writing the confirmation
-message in Phase 2, it changes what you're allowed to claim happened.
+See `references/storage.md` for the file layout and the local status rule, and
+`references/mcp-tools.md` for the signatures, the status enum, and the
+`effective`/`displayed_status` semantics — in `tenant` mode read that before
+writing the confirmation message in Phase 2, it changes what you're allowed to
+claim happened.
 
 ---
 
@@ -70,6 +76,15 @@ message in Phase 2, it changes what you're allowed to claim happened.
    for next Tuesday") — free text, not required.
 
 ### Phase 2: Write + report honestly
+
+**`local` (default):** before writing, read the existing `application.md` if the
+folder exists. If its `status` is *later in the process* than what the user just
+reported, do not move it backwards silently — say what the file holds, ask which
+is current, then write. Otherwise update `status`, `updated` and the notes body,
+regenerate `applications/INDEX.md`, read both back and confirm with the paths:
+"Logged — [company] / [role] is now `[status]` (~/job-search/applications/<slug>/)."
+
+**`tenant`:**
 
 1. Call `save_application({ job_id, status, company, role, notes })`.
 2. Read the response's `effective` field:
@@ -99,6 +114,10 @@ handles interview prep or negotiation, so keep it to what's actually true:
 - Claiming the application was "sent" — this skill never sends anything; only log
   what the user tells you they already did
 - Reporting a `save_application` call as successful without checking `effective`
+  (`tenant`), or reporting a file write you did not read back (`local`)
+- Moving a status backwards without asking, or hand-editing `INDEX.md` instead of
+  regenerating it from the `application.md` files
+- Asking the user which storage mode to use — decide it, then say which one
 - Guessing a `status` value from vague phrasing instead of asking
 - Offering interview prep, negotiation help, or portal automation — out of scope
   for this skill and this plugin
@@ -111,4 +130,5 @@ handles interview prep or negotiation, so keep it to what's actually true:
 
 | File | Purpose |
 |------|---------|
-| `references/mcp-tools.md` | `save_application` + `get_my_matches` signatures, status enum, `effective`/`displayed_status` semantics |
+| `references/storage.md` | **Read first.** local vs. tenant mode, the `applications/` layout, `application.md` + `INDEX.md` format, the local status rule |
+| `references/mcp-tools.md` | `save_application` + `get_my_matches` signatures, status enum, `effective`/`displayed_status` semantics (`tenant` mode) |

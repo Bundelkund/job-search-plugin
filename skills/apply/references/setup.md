@@ -40,7 +40,11 @@ If you see an error: double-check your API key in **Settings → MCP Connectors*
 
 ## Step 3: Populate your profile
 
-The skill reads your application profile exclusively via `get_my_profile()`. The profile has five fields. The tenant owner populates them via `PUT /my/profile` — either manually or by syncing from Markdown files.
+The skill reads your application profile — from `~/job-search/profile.md` by
+default, or from the tenant service where no file tool exists (`storage.md`).
+Either way it has the same five fields. The usual way to fill them is to run
+`/letter-forge` once; on the server the tenant owner can also populate them via
+`PUT /my/profile`.
 
 | Field | What goes in it |
 |-------|-----------------|
@@ -50,10 +54,14 @@ The skill reads your application profile exclusively via `get_my_profile()`. The
 | `skills_matrix` | Skills with evidence (not a self-assessment scale) |
 | `writing_style` | Tone, language rules, DON'Ts for your cover letters |
 
-Once all five fields are set, `get_my_profile()` will return them. Then run `/apply` to start your first application.
+Once all five sections are filled, `/apply` can use them. Run `/letter-forge`
+first if the profile is still empty.
 
 ## Re-running or updating
 
-To update a single profile field, the tenant owner calls `PUT /my/profile` with only that field in the body — partial updates are supported, the other four fields stay unchanged.
+To update a single field, edit that `##` section of `profile.md` (or, in
+`tenant` mode, call `PUT /my/profile` with only that field — partial updates are
+supported, the other four stay unchanged).
 
-To check your current profile: ask Claude to call `get_my_profile()` in any conversation where the connector is active.
+To check your current profile: open `~/job-search/profile.md`, or ask for
+`get_my_profile()` in `tenant` mode.

@@ -38,7 +38,7 @@ If no contact is found, address the cover letter generically (e.g. "Sehr geehrte
 
 **Load context**:
 - `references/agent-prompt-template.md` — structure, tone, rules (single source of truth)
-- `get_my_profile()` fields — positioning, achievements, writing_style
+- profile fields — positioning, achievements, writing_style
 - `job-fit-analysis` from Phase 2a — fit + keywords
 - research notes from 3a
 
@@ -71,7 +71,7 @@ betreff: "Bewerbung als {{Role}}"
 
 **Grounding gate** (mandatory — before Phase 4):
 
-> Every substantive claim in the cover letter must be traceable to the profile data loaded via `get_my_profile()`. This is a verification pass, not a keyword search.
+> Every substantive claim in the cover letter must be traceable to the profile data loaded in Phase 1. This is a verification pass, not a keyword search.
 
 1. From the cover letter, extract every **employer name, job title, skill claim, and number**.
 2. For each: does it appear in the profile (`cv_text`, `achievements`, `skills_matrix`)?

@@ -5,7 +5,7 @@ description: Cover-letter + CV generator from job posting to ready-to-send Markd
 
 # /apply — Application Builder
 
-> From job posting to a polished cover letter + CV in Markdown. Runs fully in-conversation via the tenant MCP tools — no local filesystem, no shell commands, no PDF pipeline.
+> From job posting to a polished cover letter + CV in Markdown. The posting comes from the tenant connector, your profile from `~/job-search/profile.md` by default — no shell commands, no PDF pipeline.
 
 ## When to use
 
@@ -23,17 +23,20 @@ Do **not** use for:
 ## Prerequisites
 
 - Tenant connector installed and a provisioned API key (see `references/setup.md`)
-- Profile populated by the tenant owner via `PUT /my/profile` (5 fields required — see setup)
+- A populated profile — `~/job-search/profile.md` by default, filled by
+  `/letter-forge`; on the server the 5 fields via `PUT /my/profile` (see setup)
+- Read `references/storage.md` before loading the profile — it decides local vs.
+  tenant and fixes the file format
 
 ---
 
-## MCP tools (the only I/O)
+## I/O
 
 | Tool | Purpose |
 |------|---------|
 | `get_my_matches(min_score?, limit?)` | Ranked job list — metadata only |
 | `get_job(job_id)` | Full posting text — mandatory input for cover letter |
-| `get_my_profile()` | 5-field profile (positioning, cv_text, achievements, skills_matrix, writing_style) |
+| the profile — `~/job-search/profile.md` locally, `get_my_profile()` on the server | 5 fields: positioning, cv_text, achievements, skills_matrix, writing_style (see `references/storage.md`) |
 | `save_application({job_id, status, company?, role?, notes?})` | Tracker write; `status` ∈ `drafted \| applied \| interview \| offer \| rejected \| paused` |
 
 ---
@@ -44,7 +47,8 @@ Do **not** use for:
 
 1. **Job suggestions** (when `/apply` called without a posting): call `get_my_matches` and present top results; user picks one
 2. **Receive the posting**: text pasted inline **or** `job_id` → call `get_job(job_id)` to retrieve the full description
-3. **Load profile**: call `get_my_profile()` — this replaces all `profile/*.md` files
+3. **Load the profile** once, the way `references/storage.md` prescribes —
+   `local`: read `~/job-search/profile.md`; `tenant`: `get_my_profile()`
 4. **Confirm the job**: present company, role, location, fit-score (if available) to the user
 
 ### Phase tracking (mandatory after Phase 1)
@@ -82,7 +86,8 @@ Read `references/phase-4-review.md`.
 
 ### Phase 5: Completion
 
-Tracker update via `save_application`, application channel research, questions for the hiring team.
+Save the documents, open the tracker entry, research the application channel,
+prepare questions for the hiring team.
 
 Read `references/phase-5-completion.md`.
 
@@ -96,18 +101,22 @@ Read `references/revision-mode.md`.
 
 ---
 
-## Artifacts produced in-conversation
+## Artifacts produced
 
-All output is in-conversation Markdown (no files written to disk):
+Everything is drafted in the conversation. In `local` mode (the default) the
+finished pieces are then saved under
+`~/job-search/applications/<slug>/` in Phase 5 — see `references/storage.md`.
+In `tenant` mode they stay in the conversation; only the tracker entry is written.
 
-| Artifact | Phase |
-|----------|-------|
-| Job posting summary | Phase 1 |
-| `job-fit-analysis` | Phase 2a |
-| `cv-anpassung` (bullet upgrade) | Phase 2b |
-| `cv` (final tailored CV) | Phase 2c |
-| `anschreiben` (cover letter) | Phase 3c |
-| Review notes | Phase 4 |
+| Artifact | Phase | Saved as (`local`) |
+|----------|-------|--------------------|
+| Job posting summary | Phase 1 | `job-posting.md` |
+| Job-fit analysis | Phase 2a | `job-fit-analysis.md` |
+| CV bullet upgrade | Phase 2b | folded into `cv.md` |
+| Final tailored CV | Phase 2c | `cv.md` |
+| Cover letter | Phase 3c | `cover-letter.md` |
+| Review notes | Phase 4 | appended to `application.md` notes |
+| Tracker entry | Phase 5 | `application.md` + `INDEX.md` |
 
 **PDF export**: not available in-conversation. Copy the final Markdown to your preferred editor for PDF export.
 
@@ -117,7 +126,7 @@ All output is in-conversation Markdown (no files written to disk):
 
 1. **Template = single source of truth.** Tone and structure live in `references/agent-prompt-template.md`.
 2. **Company research is mandatory.** Never write a cover letter without it.
-3. **Profile data = data source.** Every claim must be traceable to `get_my_profile()` fields.
+3. **Profile data = data source.** Every claim must be traceable to a profile field.
 4. **Job text is mandatory.** Call `get_job(job_id)` before Phase 2.
 
 ## Anti-patterns
@@ -137,6 +146,7 @@ Batch mode (parallel applications) and daily auto-apply automation are not avail
 
 | File | Purpose |
 |------|---------|
+| `references/storage.md` | **Read first.** local vs. tenant mode, where the profile lives, the `profile.md` format |
 | `references/setup.md` | First-time connector + profile setup |
 | `references/agent-prompt-template.md` | Writing rules (tone, structure, Jonas-Regel) |
 | `references/phase-2-analysis.md` | Job-fit + CV tailoring |

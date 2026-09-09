@@ -1,6 +1,6 @@
 # MCP Tools Reference
 
-> The four tools exposed by the tenant connector. These are the only I/O the rank skill uses — no local filesystem, no direct API calls, no shell commands.
+> The four tools exposed by the tenant connector. Together with the profile (a file in `local` mode, `get_my_profile()` in `tenant` mode — see `storage.md`) they are everything the rank skill reads. No direct API calls, no shell commands.
 
 ---
 

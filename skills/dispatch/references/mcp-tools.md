@@ -1,6 +1,10 @@
 # MCP Tools Reference
 
-> The two tools `/dispatch` uses. Only I/O — no local filesystem, no direct API calls, no shell commands, no browser, no email.
+> The two tools `/dispatch` can use. No direct API calls, no shell commands, no browser, no email.
+>
+> `get_my_matches` is used in both storage modes. `save_application` applies to
+> `tenant` mode only — in `local` mode (the default) the tracker is a folder of
+> Markdown files instead. See `storage.md`.
 
 ---
 
