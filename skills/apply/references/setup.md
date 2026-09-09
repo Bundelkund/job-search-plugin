@@ -6,6 +6,18 @@
 
 **Claude Code:** install via the plugin — `/plugin marketplace add Bundelkund/job-search-plugin` then `/plugin install job-search@konektos`. The tenant connector is included automatically.
 
+**Codex CLI:** clone the plugin repo, copy `skills/*` into `~/.agents/skills/`, then register the
+bundled connector:
+
+```bash
+codex mcp add tenant \
+  --env TENANT_URL=https://tenant.konektos.de \
+  --env TENANT_API_KEY=your-personal-key \
+  -- node "$HOME/job-search-plugin/mcp/index.mjs"
+```
+
+See the plugin README's *Install → Codex CLI* section for the full walkthrough.
+
 **Claude Desktop:**
 1. Obtain the `tenant-mcp.mcpb` connector file from the tenant owner (provisioned out-of-band)
 2. In Claude Desktop: **Settings → MCP Connectors → Install from file** → select the `.mcpb` file

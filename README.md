@@ -19,12 +19,14 @@ The skills read and write your personal data **only** through the bundled `tenan
 
 ## Requirements
 
-- Claude Code
+- Claude Code, or Codex CLI (the skills follow the Agent Skills standard both read)
 - **Node.js 20+** on your PATH (runs the bundled MCP server)
 - A personal **tenant API key** (ask the tenant owner) — provided via the `TENANT_API_KEY` environment variable
 - The Discovery Engine + Tenant service run centrally — you connect to the live instance, you don't host them
 
 ## Install
+
+### Claude Code
 
 ```
 /plugin marketplace add Bundelkund/job-search-plugin
@@ -39,6 +41,40 @@ export TENANT_API_KEY="your-personal-key"
 
 By default the connector targets `https://tenant.konektos.de`. Restart Claude Code after installing so the MCP server picks up the key.
 
+### Codex CLI
+
+Codex has no plugin system, so you install the two halves yourself — the skills into the
+Agent Skills directory Codex reads, and the bundled MCP server as a Codex MCP entry.
+
+```bash
+# 1. Clone — this repo ships the skills and the pre-bundled MCP server
+git clone https://github.com/Bundelkund/job-search-plugin.git ~/job-search-plugin
+
+# 2. Make the skills visible to Codex
+mkdir -p ~/.agents/skills
+cp -R ~/job-search-plugin/skills/* ~/.agents/skills/
+
+# 3. Register the tenant connector (insert your own key)
+codex mcp add tenant \
+  --env TENANT_URL=https://tenant.konektos.de \
+  --env TENANT_API_KEY=your-personal-key \
+  -- node "$HOME/job-search-plugin/mcp/index.mjs"
+
+# 4. Verify
+codex mcp list
+```
+
+No `npm install` needed — `mcp/index.mjs` is a self-contained bundle.
+
+Restart Codex, then ask for `get_my_matches` in a fresh conversation. A JSON list of jobs means
+you're set; a 401 means the key is wrong.
+
+Two differences from Claude Code, both cosmetic:
+
+- Skills are invoked with `$name` (Codex) instead of `/job-search:name`.
+- The `rank` skill asks for one subagent per chunk of candidates. Codex scores them sequentially
+  instead — same ranking, just slower on long match lists.
+
 ## Use
 
 ```
@@ -48,6 +84,8 @@ By default the connector targets `https://tenant.konektos.de`. Restart Claude Co
 /job-search:dispatch         # log what happened after you send it yourself
 /job-search:interview        # prep before a round, debrief after it
 ```
+
+On Codex the same five, as `$letter-forge`, `$rank`, `$apply <job_id>`, `$dispatch`, `$interview`.
 
 Typical flow: `letter-forge` once → `rank` to find the best jobs → `apply` on the top pick → send it yourself → `dispatch` to log it → `interview` when a round gets scheduled, and again right after it happens.
 
