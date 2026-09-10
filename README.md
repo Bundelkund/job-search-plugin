@@ -60,11 +60,21 @@ that, `local` to force files.
 /plugin install job-search@konektos
 ```
 
-Set your API key so the bundled connector can authenticate (add it to your shell profile so it persists):
+Set your API key so the bundled connector can authenticate — it has to persist across terminal
+sessions, so put it in your shell profile (macOS/Linux) or the user environment (Windows):
 
 ```bash
-export TENANT_API_KEY="your-personal-key"
+# macOS / Linux
+export TENANT_API_KEY="your-personal-key"   # add to ~/.zshrc or ~/.bashrc
 ```
+
+```powershell
+# Windows — sets it permanently for your user, no script execution needed
+[Environment]::SetEnvironmentVariable("TENANT_API_KEY", "your-personal-key", "User")
+```
+
+On Windows, open a **new** terminal afterwards — running processes do not pick up a newly set
+variable. You do not need to change the PowerShell execution policy for any of this.
 
 By default the connector targets `https://tenant.konektos.de`. Restart Claude Code after installing so the MCP server picks up the key.
 
