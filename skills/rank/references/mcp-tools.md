@@ -1,6 +1,27 @@
 # MCP Tools Reference
 
-> The four tools exposed by the tenant connector. Together with the profile (a file in `local` mode, `get_my_profile()` in `tenant` mode — see `storage.md`) they are everything the rank skill reads. No direct API calls, no shell commands.
+> The five tools exposed by the tenant connector. Together with the profile (a file in `local` mode, `get_my_profile()` in `tenant` mode — see `storage.md`) they are everything the rank skill reads. No direct API calls, no shell commands.
+
+---
+
+## get_my_search_terms
+
+The Phase 0 precondition: what the nightly run searches for on this user's behalf.
+
+**Signature**
+```
+get_my_search_terms({ kind?: "role" | "location" }) → { terms: string[] }
+```
+
+**Response shape**
+```json
+{ "terms": ["Scrum Master", "Agile Coach"] }
+```
+
+**Usage in rank**: called once, before any rubric work. An empty list is the whole
+explanation for an empty match list — the run has never had anything to look for.
+Send the user to `/letter-forge` (Phase 5) instead of continuing. Terms are set
+there, not here; `/rank` only reads them.
 
 ---
 
@@ -127,7 +148,9 @@ The response echoes the written event plus `effective`/`displayed_status` — se
 
 | Scenario | Handling |
 |----------|---------|
-| `get_my_matches` returns empty list | Inform the user; suggest running the discovery pipeline first |
+| `get_my_search_terms` returns empty list | The cause of an empty match list in almost every new setup. Say it plainly, send the user to `/letter-forge` (Phase 5), and stop — do not start the rubric |
+| `get_my_matches` empty **but** terms exist | A different state: terms are stored, no nightly run has produced matches for them yet. Matching runs once a day. Say which case it is — never just "0 matches" |
+| `get_my_search_terms` missing from the tool list | Connector older than v0.4.0; the precondition cannot be checked. Report the connector version and ask the user to update, rather than guessing why matches are missing |
 | `get_job` returns 404 | Skip the job; note it in the ranking summary as "not found" |
 | Connector not installed / auth error | Stop and direct user to `references/setup.md` in `apply-skill` for setup |
 | Partial batch failure | Continue with successful jobs; report the failed job_ids at the end |

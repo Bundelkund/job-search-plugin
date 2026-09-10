@@ -32,6 +32,8 @@ Do **not** use for:
 - Tenant connector installed with a provisioned API key
 - A profile to calibrate against — `~/job-search/profile.md` by default; read
   `references/storage.md` before loading it
+- Search terms set for this user — `get_my_search_terms()` returns a non-empty
+  list. Without them no match can ever exist; Phase 0 checks this first
 - At least one job match in the tenant (`get_my_matches` returns results)
 - A rubric — either the user's own, or the worked example in `references/scoring-rubric.md`
 
@@ -43,6 +45,7 @@ See `references/mcp-tools.md` for full signatures and response shapes.
 
 | Tool | Purpose |
 |------|---------|
+| `get_my_search_terms(kind?)` | Phase 0 precondition — no terms, no matches, ever |
 | `get_my_matches(min_score?, limit?)` | Ranked job list — metadata only |
 | `get_job(job_id)` | Full posting text — needed for scoring |
 | the profile — `~/job-search/profile.md` locally, `get_my_profile()` on the server | Drives rubric calibration (see `references/storage.md`) |
@@ -51,6 +54,25 @@ See `references/mcp-tools.md` for full signatures and response shapes.
 ---
 
 ## Workflow
+
+### Phase 0: Precondition — are there terms to search with?
+
+**Run this before anything else.** Call `get_my_search_terms()`.
+
+An empty list means the nightly run has never had anything to look for, so there
+are no matches and none will appear. Say that plainly and send the user to
+`/letter-forge` (Phase 5) to set role and location terms. Do **not** continue into
+the rubric work: making someone define a scoring rubric and pick archetype cards,
+only to report zero matches afterwards, wastes their time and hides the cause.
+
+This is not hypothetical. The first outside user ran the full onboarding, then
+`/rank`, and got "0 job matches" with no explanation — the terms had never been
+set, and nothing in the flow said so.
+
+If terms exist but `get_my_matches` is still empty, that is a **different** state
+and deserves a different sentence: the terms are stored, but no nightly run has
+produced matches for them yet. Matching runs once a day; freshly added terms take
+until the next run. Say which of the two cases applies — never just "0 matches".
 
 ### Phase 1: Load rubric + profile
 

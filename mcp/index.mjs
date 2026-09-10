@@ -26796,10 +26796,18 @@ var StdioServerTransport = class {
 
 // src/tenant-client.ts
 var TIMEOUT_MS = 15e3;
+var FehlerDetail = external_exports.object({
+  error: external_exports.string().optional(),
+  message: external_exports.string().optional(),
+  kind: external_exports.string().optional(),
+  removed: external_exports.array(external_exports.string()).optional(),
+  hint: external_exports.string().optional()
+}).passthrough();
 var TenantError = class extends Error {
-  constructor(message, status) {
+  constructor(message, status, detail) {
     super(message);
     this.status = status;
+    this.detail = detail;
     this.name = "TenantError";
   }
 };
@@ -26822,22 +26830,30 @@ function describe(status, detail) {
   const d = detail ? ` (${detail})` : "";
   if (status === 401) return `Authentifizierung fehlgeschlagen \u2014 API-Key ung\xFCltig oder fehlt${d}`;
   if (status === 404) return `Nicht gefunden${d}`;
+  if (status === 409) return `Konflikt mit dem gespeicherten Stand${d}`;
   if (status >= 500) return `Tenant-Dienst-Fehler (${status})${d}`;
   return `Tenant-Antwort ${status}${d}`;
+}
+function isDetailRecord(value) {
+  return typeof value === "object" && value !== null && "detail" in value;
+}
+function isPlainString(value) {
+  return typeof value === "string";
+}
+function readableDetail(detail) {
+  if (detail.message !== void 0) return detail.message;
+  return JSON.stringify(detail);
 }
 async function tenantRequest(cfg, opts) {
   const url = `${cfg.baseUrl}${opts.path}`;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   let resp;
+  const headers = opts.body !== void 0 ? { "X-API-Key": cfg.apiKey, Accept: "application/json", "Content-Type": "application/json" } : { "X-API-Key": cfg.apiKey, Accept: "application/json" };
   try {
     resp = await fetch(url, {
       method: opts.method ?? "GET",
-      headers: {
-        "X-API-Key": cfg.apiKey,
-        Accept: "application/json",
-        ...opts.body !== void 0 ? { "Content-Type": "application/json" } : {}
-      },
+      headers,
       body: opts.body !== void 0 ? JSON.stringify(opts.body) : void 0,
       signal: controller.signal
     });
@@ -26858,8 +26874,14 @@ async function tenantRequest(cfg, opts) {
     }
   }
   if (!resp.ok) {
-    const detail = parsed && typeof parsed === "object" && "detail" in parsed ? String(parsed.detail) : typeof parsed === "string" ? parsed : void 0;
-    throw new TenantError(describe(resp.status, detail), resp.status);
+    const rohesDetail = isDetailRecord(parsed) ? parsed.detail : void 0;
+    const strukturiert = FehlerDetail.safeParse(rohesDetail);
+    const detail = isPlainString(rohesDetail) ? rohesDetail : strukturiert.success ? readableDetail(strukturiert.data) : isPlainString(parsed) ? parsed : void 0;
+    throw new TenantError(
+      describe(resp.status, detail),
+      resp.status,
+      strukturiert.success ? strukturiert.data : void 0
+    );
   }
   return parsed;
 }
@@ -26868,8 +26890,8 @@ async function tenantRequest(cfg, opts) {
 function ok(data) {
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
 }
-function fail(err) {
-  const msg = err instanceof TenantError ? err.message : err instanceof Error ? err.message : String(err);
+function fail(cause) {
+  const msg = cause instanceof TenantError ? cause.message : cause instanceof Error ? cause.message : String(cause);
   return { content: [{ type: "text", text: msg }], isError: true };
 }
 function registerTools(server, cfg) {
@@ -26888,9 +26910,9 @@ function registerTools(server, cfg) {
       try {
         const data = await tenantRequest(cfg, { path: "/my/matches" });
         let rows = Array.isArray(data?.matches) ? data.matches : [];
-        if (typeof min_score === "number") rows = rows.filter((r) => Number(r.score) >= min_score);
+        if (min_score !== void 0) rows = rows.filter((r) => Number(r.score) >= min_score);
         rows.sort((a, b) => Number(b.score) - Number(a.score));
-        if (typeof limit === "number") rows = rows.slice(0, limit);
+        if (limit !== void 0) rows = rows.slice(0, limit);
         else rows = rows.slice(0, 50);
         return ok({ count: rows.length, matches: rows });
       } catch (err) {
@@ -27044,13 +27066,71 @@ function registerTools(server, cfg) {
       }
     }
   );
+  server.registerTool(
+    "get_my_search_terms",
+    {
+      title: "Meine Suchbegriffe",
+      description: "Liefert die Begriffe, nach denen der n\xE4chtliche Suchlauf f\xFCr DICH sucht. kind='role' (Default) sind Jobtitel/Rollen, kind='location' sind Orte (inkl. 'Remote'). Ohne Rollen-Begriffe entstehen \xFCberhaupt keine Matches \u2014 wenn get_my_matches leer ist, ist das hier die erste Pr\xFCfung.",
+      inputSchema: {
+        kind: external_exports.enum(["role", "location"]).optional().describe("'role' (Default) = Jobtitel/Rollen, 'location' = Orte inkl. Remote.")
+      },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
+    },
+    async ({ kind }) => {
+      try {
+        const path = kind ? `/my/search-terms?kind=${encodeURIComponent(kind)}` : "/my/search-terms";
+        const data = await tenantRequest(cfg, { path });
+        return ok(data);
+      } catch (err) {
+        return fail(err);
+      }
+    }
+  );
+  server.registerTool(
+    "set_my_search_terms",
+    {
+      title: "Meine Suchbegriffe setzen",
+      description: "Setzt die Suchbegriffe EINER Art auf genau diese Liste (kein Anh\xE4ngen: was fehlt, wird entfernt). kind='role' sind Jobtitel/Rollen, kind='location' sind Orte inkl. 'Remote'. Ohne Orte bleibt das Geo-Signal der Bewertung ungenutzt und die Punktzahlen fallen strukturell niedriger aus \u2014 beide Arten setzen. Onboarding-Ziel f\xFCr letter-forge; Wirkung ab dem n\xE4chsten n\xE4chtlichen Lauf.",
+      inputSchema: {
+        terms: external_exports.array(external_exports.string().min(1)).min(1).describe("Die vollst\xE4ndige gew\xFCnschte Liste dieser Art \u2014 nicht nur die neuen."),
+        kind: external_exports.enum(["role", "location"]).optional().describe("'role' (Default) oder 'location'."),
+        allow_shrink: external_exports.boolean().optional().describe("Nur setzen, wenn das absichtliche K\xFCrzen der Liste best\xE4tigt wurde.")
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
+    },
+    async ({ terms, kind, allow_shrink }) => {
+      try {
+        const data = await tenantRequest(cfg, {
+          method: "PUT",
+          path: "/my/search-terms",
+          body: { terms, kind: kind ?? "role", allow_shrink: allow_shrink ?? false }
+        });
+        return ok(data);
+      } catch (err) {
+        if (err instanceof TenantError && err.status === 409) {
+          const entfallend = removedTerms(err.detail);
+          if (entfallend.length > 0) {
+            return ok({
+              status: "bestaetigung_noetig",
+              hinweis: `Diese ${entfallend.length} Begriffe w\xFCrden entfernt, weil sie in der neuen Liste fehlen. Sollen sie weg, denselben Aufruf mit allow_shrink=true wiederholen; sollen sie bleiben, in die Liste aufnehmen und erneut senden.`,
+              wuerden_entfernt: entfallend
+            });
+          }
+        }
+        return fail(err);
+      }
+    }
+  );
+}
+function removedTerms(detail) {
+  return detail?.removed ?? [];
 }
 
 // src/index.ts
 async function main() {
   const cfg = loadConfig();
   const server = new McpServer(
-    { name: "tenant-mcp", version: "0.3.0" },
+    { name: "tenant-mcp", version: "0.4.0" },
     {
       instructions: "Pers\xF6nlicher Job-/Bewerbungs-Zugang. Reihenfolge: get_my_matches (Trefferliste) \u2192 get_job(job_id) f\xFCr den vollen Stellentext \u2192 get_my_profile als Lese-Quelle. set_my_profile schreibt das Profil (Onboarding/letter-forge). save_application erst nach fertiger Bewerbung. Jeder Aufruf ist auf den eigenen API-Key gescoped."
     }
@@ -27059,8 +27139,8 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }
-main().catch((err) => {
-  const msg = err instanceof Error ? err.message : String(err);
+main().catch((cause) => {
+  const msg = cause instanceof Error ? cause.message : String(cause);
   process.stderr.write(`[tenant-mcp] Start fehlgeschlagen: ${msg}
 `);
   process.exit(1);

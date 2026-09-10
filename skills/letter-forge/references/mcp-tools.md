@@ -1,7 +1,11 @@
 # MCP Tools Reference
 
-> The two tools used by letter-forge. Provided by the tenant connector (>= v0.2.0).
+> The four tools used by letter-forge. Provided by the tenant connector (>= v0.4.0).
 > No local filesystem, no direct API calls, no shell commands.
+>
+> Two of them write the **profile** (who you are), two write the **search terms**
+> (what the nightly run looks for). Both are needed: a profile without search
+> terms produces no matches at all.
 
 ---
 
@@ -81,6 +85,62 @@ before calling `set_my_profile`. Never write without confirmation.
 
 ---
 
+## get_my_search_terms
+
+Read the terms the nightly matching run uses for this user.
+
+**Signature**
+```
+get_my_search_terms({ kind?: "role" | "location" }) → { terms: string[] }
+```
+
+| Parameter | Meaning |
+|---|---|
+| `kind` | `role` (default) = job titles. `location` = cities and `Remote`. |
+
+**Response shape**
+```json
+{ "terms": ["Scrum Master", "Agile Coach"] }
+```
+
+**Usage in letter-forge**: called at the end of Phase 5 to read back what was
+stored, so the user sees the result instead of trusting a silent write. An empty
+list after writing means the write did not land — do not paper over it.
+
+---
+
+## set_my_search_terms
+
+Set the terms of one kind to exactly this list.
+
+**Signature**
+```
+set_my_search_terms({ terms: string[], kind?: "role" | "location", allow_shrink?: boolean }) → { terms: string[] }
+```
+
+| Parameter | Meaning |
+|---|---|
+| `terms` | The complete desired list for that kind — **not** only the new ones |
+| `kind` | `role` (default) or `location` |
+| `allow_shrink` | Only after the user confirmed that terms may be dropped |
+
+**Set semantics, not append.** Anything missing from the list is removed. To add
+one term, send the existing terms plus the new one — read them first with
+`get_my_search_terms`.
+
+**Shrink guard**: if the new list drops terms, the call returns
+```json
+{ "status": "bestaetigung_noetig", "wuerden_entfernt": ["..."], "hinweis": "..." }
+```
+This is a question, not a failure. Show which terms would go, ask, and only then
+repeat with `allow_shrink: true`.
+
+**Usage in letter-forge**: Phase 5, once per kind. Role terms come from the Part 5
+answers; location terms are asked for explicitly, including `Remote`. Both kinds
+go to the service even in `local` storage mode.
+
+---
+
 ## Error handling
 
 | Scenario | Handling |
@@ -89,6 +149,8 @@ before calling `set_my_profile`. Never write without confirmation.
 | `get_my_profile` returns 404 or null | Treat as empty profile; proceed with questionnaire |
 | `set_my_profile` returns `{ ok: false }` | Retry once; if still failing, show the content to the user and suggest manual copy-paste via `PUT /my/profile` |
 | `tenant-mcp` version < 0.2.0 | `set_my_profile` will be missing from the tool list; inform user to upgrade the connector |
+| `set_my_search_terms` missing from the tool list | Connector older than v0.4.0. Say so plainly and stop — do **not** fall back to writing terms into the profile text, they would never reach the matching run |
+| `set_my_search_terms` returns `bestaetigung_noetig` | Not an error: terms would be dropped. Show `wuerden_entfernt`, ask, repeat with `allow_shrink: true` only if confirmed |
 
 ---
 

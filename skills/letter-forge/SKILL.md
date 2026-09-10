@@ -39,8 +39,9 @@ Do **not** use for:
 
 ## Prerequisites
 
-- Tenant connector (>= v0.2.0) with a provisioned API key — required in
-  `tenant` storage mode, unused in `local` mode
+- Tenant connector (>= v0.4.0) with a provisioned API key — required in **both**
+  storage modes: `local` keeps your written material on the machine, but search
+  terms always go to the service, because the nightly matching runs there
 - Somewhere to write: `$JOB_SEARCH_HOME`, or `~/job-search` by default. Read
   `references/storage.md` before the first read or write of this run — it
   decides local vs. tenant and fixes the file format
@@ -55,6 +56,7 @@ Do **not** use for:
 |---------|-------------------|----------|
 | Read existing profile (Phase 1 gap check) | read `~/job-search/profile.md` | `get_my_profile()` |
 | Save confirmed fields | update the matching `##` sections of `profile.md`, leaving the others untouched | `set_my_profile({...})` — partial, only passed fields change |
+| Search terms (Phase 5) | `set_my_search_terms()` / `get_my_search_terms()` — **the service, in both modes** | same |
 
 Both ways are partial updates by design. See `references/storage.md` for the
 file format and `references/mcp-tools.md` for the tool signatures.
@@ -152,7 +154,37 @@ set_my_profile({
 })
 ```
 
-Confirm to the user which fields were written. Suggest `/apply` as the next step.
+Confirm to the user which fields were written.
+
+### Phase 5: Search terms — what the nightly run looks for
+
+**Not optional.** The profile says who the user is; search terms decide whether
+any job ever reaches them. With no role terms stored, the nightly run produces
+nothing and `/rank` returns zero — with no hint as to why.
+
+1. Propose role terms from Part 5 answers (P5.2/P5.3). Concrete job titles as they
+   appear in postings — "Scrum Master", "Agile Delivery Manager" — not aspirations
+   like "meaningful agile work". Show the list, let the user cut and add.
+2. Ask for locations, and say why: cities they would work in, plus `Remote` if
+   remote is acceptable. **Without location terms the geographic signal stays
+   unused and every match scores structurally lower.** Remote-only users still
+   need `Remote` stored.
+3. Write each kind separately:
+
+```
+set_my_search_terms({ terms: ["Scrum Master", "Agile Coach", ...], kind: "role" })
+set_my_search_terms({ terms: ["Berlin", "Remote"], kind: "location" })
+```
+
+4. Read back with `get_my_search_terms()` and show what is now stored.
+
+Setting terms replaces the list of that kind — it does not append. If the call
+returns `bestaetigung_noetig`, terms would be dropped: show which ones and ask
+before repeating with `allow_shrink: true`.
+
+Close by telling the user that matches appear after the next nightly run, and
+that `/rank` is the next step once they do — not `/apply`, since there is nothing
+to apply to yet.
 
 ---
 
@@ -202,5 +234,5 @@ until the user confirms the synthesized fields in Phase 3.
 | `references/document-import.md` | How to draft profile fields from a pasted CV/cover letters/other documents, and how to identify what's still a gap |
 | `references/questionnaire.md` | Full question bank (5 parts, ~35 questions) |
 | `references/synthesis.md` | How answers map to the 5 profile fields |
-| `references/mcp-tools.md` | `get_my_profile` + `set_my_profile` signatures |
+| `references/mcp-tools.md` | `get_my_profile`, `set_my_profile`, `get_my_search_terms`, `set_my_search_terms` signatures |
 | `examples/sam-thornbury/` | End-to-end fictional worked example |

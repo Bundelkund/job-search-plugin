@@ -8,7 +8,7 @@
 
 | Component | Type | What it does |
 |-----------|------|--------------|
-| `letter-forge` | skill | Builds your application profile — paste a CV/past cover letters/other documents to draft it, or answer the interactive questionnaire for what's left. Saved as `~/job-search/profile.md` |
+| `letter-forge` | skill | Builds your application profile — paste a CV/past cover letters/other documents to draft it, or answer the interactive questionnaire for what's left. Saved as `~/job-search/profile.md`. Ends by setting the **search terms** the nightly run uses — without them no matches are ever produced |
 | `rank` | skill | Re-ranks your job matches by a fit rubric you define |
 | `apply` | skill | Turns a job posting into a cover letter + CV, saved under `~/job-search/applications/<company-role>/` |
 | `dispatch` | skill | Logs an application's status (drafted/applied/interview/offer/rejected/paused) in your tracker — after you've submitted it yourself; no portal or email automation |
@@ -106,8 +106,10 @@ codex mcp list
 No `npm install` needed — `mcp/index.mjs` is a self-contained bundle.
 
 Restart Codex, then ask for `get_my_matches` in a fresh conversation. A JSON list of jobs means
-you're set; a 401 means the key is wrong. An empty list usually means no search terms yet —
-add some before expecting matches.
+you're set; a 401 means the key is wrong. An empty list on a fresh account is expected: no
+search terms have been set yet, so the nightly run has never looked for anything. `$letter-forge`
+sets them in its last phase — that is the step that turns an empty account into one that
+receives matches.
 
 Storage works the same as in Claude Code: your profile, applications and interview
 notes are written to `~/job-search`, the connector is used for matches and postings.
@@ -121,7 +123,7 @@ Two differences from Claude Code, both cosmetic:
 ## Use
 
 ```
-/job-search:letter-forge     # first run only — build your profile
+/job-search:letter-forge     # first run only — build your profile AND set your search terms
 /job-search:rank             # re-rank your current matches
 /job-search:apply <job_id>   # write the application for one job
 /job-search:dispatch         # log what happened after you send it yourself
@@ -131,6 +133,11 @@ Two differences from Claude Code, both cosmetic:
 On Codex the same five, as `$letter-forge`, `$rank`, `$apply <job_id>`, `$dispatch`, `$interview`.
 
 Typical flow: `letter-forge` once → `rank` to find the best jobs → `apply` on the top pick → send it yourself → `dispatch` to log it → `interview` when a round gets scheduled, and again right after it happens.
+
+**On a fresh account, matches do not appear the same day.** `letter-forge` stores your search
+terms; the matching runs once a day on the server. So the first `rank` worth running is the day
+after you finish onboarding — before that, `rank` will tell you which of the two is missing,
+the terms or the run.
 
 ## How it fits together
 
