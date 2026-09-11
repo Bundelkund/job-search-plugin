@@ -1,0 +1,33 @@
+name: Check tenant-mcp bundle drift
+
+# mcp/index.mjs is a built copy of Bundelkund/tenant-mcp, kept in sync by that
+# repo's sync-job-search-plugin workflow. This is the safety net for when
+# that sync fails or gets disabled: it fails loudly instead of the bundle
+# quietly going stale (which is what happened before either workflow existed).
+
+on:
+  push:
+    paths:
+      - "mcp/index.mjs"
+  schedule:
+    - cron: "0 6 * * *" # catches drift even on days nobody touches this repo
+  workflow_dispatch: {}
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compare bundled version against tenant-mcp source
+        run: |
+          BUNDLED=$(grep -o '"tenant-mcp", version: "[^"]*"' mcp/index.mjs | grep -o '[0-9][0-9.]*[0-9]')
+          UPSTREAM=$(curl -fsSL "https://raw.githubusercontent.com/Bundelkund/tenant-mcp/main/package.json" | node -p "JSON.parse(require('fs').readFileSync(0)).version")
+
+          echo "bundled:  $BUNDLED"
+          echo "upstream: $UPSTREAM"
+
+          if [ "$BUNDLED" != "$UPSTREAM" ]; then
+            echo "::error::mcp/index.mjs is built from tenant-mcp $BUNDLED but tenant-mcp main is at $UPSTREAM. Check sync-job-search-plugin.yml in tenant-mcp -- it may have failed or the push token may have expired."
+            exit 1
+          fi
