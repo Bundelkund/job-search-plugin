@@ -84,8 +84,9 @@ until the next run. Say which of the two cases applies — never just "0 matches
 
 1. Call `get_my_matches(min_score=<threshold>)` — default threshold: 40.
 2. **Do not cap by tenant score before scoring.** The tenant match-loop uses a generic profile; your rubric may surface high-fit roles the tenant ranked low. Cap happens AFTER re-rank.
-3. Warn the user if `--limit N` is set: "Jobs beyond rank N by tenant score will not be scored — high-fit roles with a low tenant score may be missed."
-4. For each candidate: call `get_job(job_id)` to retrieve the full description.
+3. Warn the user if `--limit N` is set: "Jobs beyond rank N by tenant score will not be scored — high-fit roles with a low tenant score may be missed." This is not theoretical: in a measured run, capping at 60 % of the candidates still dropped 8 of the final top 20, because the tenant score bunches most candidates on two or three values and the cut lands inside a tie.
+4. **Cross-check against the tracker before scoring** (skip with `--refresh`). In `local` mode, read `job_id` and posting URL from every `applications/<slug>/application.md`; a candidate that matches one of them gets `red_flags: ["already_applied"]` and is never presented as a pick — even if its `recommend` comes back `true`, because `recommend` is the rubric's opinion of the role, not a go-ahead. A different role at a company you already applied to is allowed; flag it as `company_applied_elsewhere` so the user sees it. In `tenant` mode the connector cannot read applications yet — say so, and ask the user to name anything they have already applied to.
+5. For each candidate: call `get_job(job_id)` to retrieve the full description.
    - If description is empty (common for LinkedIn jobs): score on title + company only; mark `red_flags: ["empty_description"]`.
 
 ### Phase 3: Parallel scoring
@@ -112,6 +113,8 @@ Output per job (JSON):
 }
 ```
 
+**Count what came back.** After the agents return, compare the `job_id`s you sent per chunk with the ones you received, and re-request the missing ones from the same agent before aggregating. Agents drop jobs silently: in a measured run two of seven agents each returned one job short while reporting "done" — the loss is invisible in the totals and, because low-tenant-score jobs sit at the end of a chunk, it tends to hit exactly the roles the re-rank exists to find.
+
 `total = dim_a_score + dim_b_score + intersection_score + requirements_gap` (the gap term is negative or zero — see `references/scoring-rubric.md` for why this dimension exists: it catches roles that score perfectly on content but are unreachable because of a hard must-have you don't meet).
 
 Red flag heuristics (automatic — agents apply these without being told explicitly):
@@ -123,10 +126,14 @@ Red flag heuristics (automatic — agents apply these without being told explici
 | `boilerplate_only` | Posting is entirely generic copy, no specific role requirements |
 | `title_company_mismatch` | Title signals one role, company signals an unrelated sector |
 | `requirements_gap` | `requirements_gap` deduction is −8 or worse |
+| `already_applied` | Set in Phase 2, not by the agent: the tracker already holds this posting — never a pick |
+| `company_applied_elsewhere` | Set in Phase 2: same company, different role — allowed, shown to the user |
 
 ### Phase 4: Aggregate + present
 
-Sort by `total` descending. Present the ranked table in-conversation:
+Sort by `total` descending. Treat the score as a noisy measurement, not a precise value: re-scoring the same job with the same rubric moved it by a median of 5 points in a measured run, a quarter of the jobs moved 10 or more, and a few flipped `recommend`. So present ties and near-ties as ties, and if you keep results across runs (Phase 5, `--refresh`), aggregate each job with the **median** of its runs rather than the latest value — the median ignores a single outlier run, the mean does not.
+
+Present the ranked table in-conversation:
 
 ```
 | Rank | Score | Dim A | Dim B | ∩ | Gap | Company       | Title               | Location | Archetype | Flags | Rec |
@@ -172,6 +179,9 @@ with `status: drafted` under `applications/<slug>/`, then regenerate `INDEX.md`;
 - Writing cover letters inside this skill — hand off to `/apply`
 - Copying the worked example rubric as if it were the user's rubric — always confirm first
 - Skipping the requirements-gap dimension — a role that scores well on content but fails a hard must-have is a guaranteed rejection, not a top pick; scoring content alone puts unreachable roles at the top
+- Reading `recommend: true` as clearance to apply — it is the rubric's verdict on the role; the tracker cross-check (Phase 2) decides whether the job is still open for you
+- Trusting an agent's "done" instead of counting returned `job_id`s — silent drops are the norm, not the exception
+- Comparing two runs by their latest scores — a 5-point move between runs is noise; use the median across runs
 
 ---
 
