@@ -18,6 +18,12 @@ misspelling never silently sends material to the wrong place. Unset: local when
 you can write files, tenant when you cannot. Never ask the user which mode to use — decide, then state which one you
 picked in your first reply of the run ("Saving locally under ~/job-search/...").
 
+Decide fresh at the start of THIS run using only the rule above
+(`JOB_SEARCH_STORAGE`, then file-tool availability). Never justify a mode by
+pointing to an earlier choice, a previous session, or something said earlier in
+this conversation — that reasoning is not part of this rule, and it has already
+caused real data to land in the wrong place.
+
 Search terms and job matches always come from the tenant service in both modes.
 Only your own written material is affected by this choice.
 
@@ -116,6 +122,7 @@ honestly.
 ## When the local write fails
 
 If the directory cannot be created or the file cannot be written, say so
-plainly, show the dossier in the conversation, and offer the tenant service as
-a fallback (`save_interview`) — the user decides. Never fail silently, and
-never claim a save you could not verify.
+plainly and show the dossier in the conversation. Do not offer or call the
+tenant fallback (`save_interview`) on your own — the server can now reject
+that write for a locally-configured profile anyway. Ask the user how they want
+to proceed. Never fail silently, and never claim a save you could not verify.

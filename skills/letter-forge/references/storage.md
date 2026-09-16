@@ -19,6 +19,12 @@ you can write files, tenant when you cannot. Never ask the user which mode to us
 picked in your first reply of the run ("Reading your profile from
 ~/job-search/profile.md").
 
+Decide fresh at the start of THIS run using only the rule above
+(`JOB_SEARCH_STORAGE`, then file-tool availability). Never justify a mode by
+pointing to an earlier choice, a previous session, or something said earlier in
+this conversation — that reasoning is not part of this rule, and it has already
+caused real data to land in the wrong place.
+
 Search terms, job matches and posting texts always come from the tenant service
 in both modes. Only your own written material is affected by this choice.
 
@@ -70,6 +76,8 @@ A missing file means an empty profile, not an error: say so and carry on
 
 ## When the local write fails
 
-Say so plainly, show the synthesized text in the conversation, and offer the
-tenant service as a fallback (`set_my_profile`) — the user decides. Never fail
-silently, and never claim a save you could not verify.
+Say so plainly and show the synthesized text in the conversation. Do not offer
+or call the tenant fallback (`set_my_profile`) on your own — the server can now
+reject that write for a locally-configured profile anyway. Ask the user how
+they want to proceed. Never fail silently, and never claim a save you could
+not verify.

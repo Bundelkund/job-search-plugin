@@ -120,6 +120,31 @@ Two differences from Claude Code, both cosmetic:
 - The `rank` skill asks for one subagent per chunk of candidates. Codex scores them sequentially
   instead — same ranking, just slower on long match lists.
 
+## Migrating from tenant storage to local
+
+If your profile, applications or interview notes were previously stored centrally
+(`JOB_SEARCH_STORAGE=tenant`, or an environment without a file tool) and you now
+want them as your own Markdown files, run this once:
+
+```bash
+TENANT_API_KEY="your-personal-key" node tools/migrate-to-local.mjs
+```
+
+It reads your existing profile, applications and interview rounds from the
+tenant service and writes them under `$JOB_SEARCH_HOME` (default `~/job-search`)
+in the same format the skills use. It is purely additive and safe to re-run:
+
+- It only reads from the server — no delete, no switching your storage mode.
+  Those stay separate, deliberate steps you take afterwards.
+- If a target file already exists with different content, it is left alone and
+  listed at the end for you to check by hand — nothing is silently overwritten.
+- Every file it writes is read back and verified before the script reports it
+  as done.
+
+A one-shot check against a mock server lives in `tools/migrate-to-local.test.mjs`
+(`node tools/migrate-to-local.test.mjs`) if you want to see it exercised without
+a real key.
+
 ## Use
 
 ```
