@@ -77,6 +77,39 @@ Check the cover letter against `references/agent-prompt-template.md`:
 <!-- Adversarial Review: PASS | R1: posting-match 5->8, authenticity 8, jonas-rule 7, no-donts 9 -->
 ```
 
-## 4b: Handoff — no PDF export by design
+## 4b: Handoff — PDF export
 
-This skill's output is polished Markdown, delivered in-conversation — not a rendered file. That is a deliberate boundary, not a missing feature: PDF export needs shell commands and local filesystem access, which this skill does not have and does not try to work around. To produce a PDF: copy the final Markdown into your preferred editor (e.g. Typora, VS Code + a markdown-to-PDF extension, or a word processor) and export from there.
+Call `render_pdf` only after the user has approved the Markdown in this review
+phase — never before. Render both documents:
+
+```
+render_pdf({
+  kind: "cover_letter",
+  markdown: "<exact content of cover-letter.md>",
+  sender: { name, city?, email?, phone?, linkedin? }   // from the CV frontmatter / profile
+})
+render_pdf({
+  kind: "cv",
+  markdown: "<exact content of cv.md>",
+  photo_path?: "<only if the user provided a photo — never ask pushily>"
+})
+```
+
+In `local` mode pass `out_path` as `$JOB_SEARCH_HOME/applications/<slug>/cover-letter.pdf`
+resp. `cv.pdf`; otherwise the tool defaults to `~/Downloads/<cover-letter|cv>.pdf`.
+`markdown` must be the exact content of `cover-letter.md` / `cv.md` in the format
+of `references/templates.md` — no paraphrasing.
+
+**If `overflow` is non-empty**: the document does not fit the page. Shorten the
+named part in the Markdown and render again — max ~3 rounds, then tell the user
+and hand over the Markdown as-is.
+
+**If the tool errors with "no browser found"**: tell the user to install Chrome
+or Edge, and hand over the Markdown as before — this is the fallback, not a
+failure to report as broken.
+
+**On success**: report `pdf_path` to the user, and mention if `overwritten` is
+true.
+
+The application text never leaves the machine — `render_pdf` renders locally
+using the user's installed Chrome, Edge, or Chromium.

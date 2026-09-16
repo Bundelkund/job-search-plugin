@@ -5,7 +5,7 @@ description: Cover-letter + CV generator from job posting to ready-to-send Markd
 
 # /apply — Application Builder
 
-> From job posting to a polished cover letter + CV in Markdown. The posting comes from the tenant connector, your profile from `~/job-search/profile.md` by default — no shell commands, no PDF pipeline.
+> From job posting to a polished cover letter + CV in Markdown, with an optional local PDF render. The posting comes from the tenant connector, your profile from `~/job-search/profile.md` by default — no shell commands.
 
 ## When to use
 
@@ -38,6 +38,7 @@ Do **not** use for:
 | `get_job(job_id)` | Full posting text — mandatory input for cover letter |
 | the profile — `~/job-search/profile.md` locally, `get_my_profile()` on the server | 5 fields: positioning, cv_text, achievements, skills_matrix, writing_style (see `references/storage.md`) |
 | `save_application({job_id, status, company?, role?, notes?})` | Tracker write; `status` ∈ `drafted \| applied \| interview \| offer \| rejected \| paused` |
+| `render_pdf({kind, markdown, out_path?, sender?, photo_path?, primary_color?, accent_color?})` | Renders `cover-letter.md` / `cv.md` to PDF locally via Chrome/Edge/Chromium — optional, Phase 4b only |
 
 ---
 
@@ -115,10 +116,15 @@ In `tenant` mode they stay in the conversation; only the tracker entry is writte
 | CV bullet upgrade | Phase 2b | folded into `cv.md` |
 | Final tailored CV | Phase 2c | `cv.md` |
 | Cover letter | Phase 3c | `cover-letter.md` |
+| Cover letter PDF (optional) | Phase 4b | `cover-letter.pdf` |
+| CV PDF (optional) | Phase 4b | `cv.pdf` |
 | Review notes | Phase 4 | appended to `application.md` notes |
 | Tracker entry | Phase 5 | `application.md` + `INDEX.md` |
 
-**PDF export**: not available in-conversation. Copy the final Markdown to your preferred editor for PDF export.
+**PDF export**: `render_pdf` renders both documents locally via the user's
+installed Chrome, Edge, or Chromium once the Markdown is approved in Phase 4.
+Without a browser, the fallback is the Markdown as before — see
+`references/phase-4-review.md` § 4b.
 
 ---
 

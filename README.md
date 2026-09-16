@@ -13,9 +13,9 @@
 | `apply` | skill | Turns a job posting into a cover letter + CV, saved under `~/job-search/applications/<company-role>/` |
 | `dispatch` | skill | Logs an application's status (drafted/applied/interview/offer/rejected/paused) in your tracker — after you've submitted it yourself; no portal or email automation |
 | `interview` | skill | Preps an interview dossier, then records the debrief afterward — kept in `~/job-search/interviews/`, separate from your profile by design |
-| `tenant` | MCP server | Connects to the tenant service for the things that must be central: your matches and the job postings behind them |
+| `tenant` | MCP server | Connects to the tenant service for the things that must be central: your matches and the job postings behind them — and renders your cover letter + CV to PDF locally via `render_pdf` |
 
-No database, no PDF toolchain — just Markdown files you can read and edit yourself.
+No database — just Markdown files you can read and edit yourself. PDFs are rendered locally with your installed Chrome, Edge, or Chromium when you ask for one; nothing is uploaded to render them, and without a browser you still get the Markdown as before.
 
 ## Where your material is stored
 
@@ -33,6 +33,7 @@ Two places, and the split is deliberate:
     INDEX.md
     nexus-ai-training-lead/
       application.md · job-posting.md · job-fit-analysis.md · cv.md · cover-letter.md
+      cv.pdf · cover-letter.pdf (optional, rendered on request)
   interviews/
     nexus-ai-training-lead/
       screening-prep.md · screening-debrief.md

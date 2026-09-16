@@ -16,7 +16,7 @@ Files included:
 ## What is **not** in here
 
 - Real personal data — every name, number, and company is invented
-- PDFs — PDF export is handled outside the skill (copy the final Markdown to your preferred editor)
+- PDFs — not pre-rendered here; run `render_pdf` (Phase 4b) against `anschreiben.md` / `cv.md` to produce them
 
 ## Verifying the example
 

@@ -1,8 +1,8 @@
 {
   "name": "job-search",
   "displayName": "Job Search — Profile, Rank, Apply",
-  "version": "0.8.0",
-  "description": "Build your application profile, re-rank your job matches, generate cover letters + CVs, track outcomes, and prep/debrief interviews. Your material is stored as Markdown under ~/job-search; the bundled tenant connector supplies matches and job postings.",
+  "version": "0.9.0",
+  "description": "Build your application profile, re-rank your job matches, generate cover letters + CVs (with optional local PDF rendering), track outcomes, and prep/debrief interviews. Your material is stored as Markdown under ~/job-search; the bundled tenant connector supplies matches, job postings, and PDF rendering.",
   "author": {
     "name": "Florian Rister",
     "email": "florian@konektos.de"
