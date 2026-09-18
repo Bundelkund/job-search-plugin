@@ -21,6 +21,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const TIMEOUT_MS = 15_000;
 
@@ -319,7 +320,10 @@ function printSummary({ written, conflicts, home }) {
   );
 }
 
-const isMain = import.meta.url === `file://${process.argv[1]}`;
+// Compare as file URLs, not strings — process.argv[1] is a raw OS path
+// (`C:\...` on Windows) while import.meta.url is always a proper file: URL
+// (`file:///C:/...`); the two forms never match by string equality.
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (isMain) {
   try {
     const result = await run();
