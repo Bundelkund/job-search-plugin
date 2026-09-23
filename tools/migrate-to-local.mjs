@@ -208,11 +208,21 @@ export function buildDebriefMd(interview) {
  * Never overwrites a pre-existing file whose content differs — the caller
  * collects those in `conflicts` and reports them instead of guessing.
  * Returns one of: "written" | "unchanged" | "conflict".
+ *
+ * `normalize`, when given, is applied to both sides before the equality
+ * check (but never to what gets written). Needed for profile.md: its
+ * `updated:` line is stamped with today()'s date on every run, so two
+ * re-runs on different days would otherwise diff on the timestamp alone
+ * even when positioning/CV/skills/etc. are byte-identical — a false
+ * "conflict" on every re-run, not a real one. Comparing normalized content
+ * also means an unchanged profile is left untouched on disk (no timestamp
+ * churn), matching "unchanged" for what it actually is.
  */
-async function safeWrite(path, content, { written, conflicts }) {
+async function safeWrite(path, content, { written, conflicts, normalize }) {
   if (existsSync(path)) {
     const existing = await readFile(path, "utf8");
-    if (existing === content) return "unchanged";
+    const equal = normalize ? normalize(existing) === normalize(content) : existing === content;
+    if (equal) return "unchanged";
     conflicts.push(path);
     return "conflict";
   }
@@ -242,8 +252,14 @@ export async function run(env = process.env) {
     tenantGet(cfg, "/my/interviews"),
   ]);
 
-  // profile.md
-  await safeWrite(join(cfg.home, "profile.md"), buildProfileMd(profile), { written, conflicts });
+  // profile.md — normalize away the today()-stamped `updated:` line so a
+  // re-run doesn't flag a false conflict when only the date moved.
+  const stripUpdatedLine = (s) => s.replace(/^updated: .*$/m, "updated:");
+  await safeWrite(join(cfg.home, "profile.md"), buildProfileMd(profile), {
+    written,
+    conflicts,
+    normalize: stripUpdatedLine,
+  });
 
   // applications/<slug>/application.md
   const apps = applicationsResp?.applications ?? [];
